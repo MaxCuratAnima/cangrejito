@@ -1,0 +1,349 @@
+{
+  "_nota": "Temas y artistas con los que el cangrejito se sube al Camaro, además de lo que ya reconoce como funk o phonk. Un tema cuenta si el título de Spotify tiene el nombre del tema y alguno de sus artistas; los «artistas» cuentan con cualquier tema. Tu copia está en %APPDATA%\\Cangrejito\temas_auto.json y se puede editar con el cangrejito andando. Ejemplo: temas de phonk y montagem.",
+  "artistas": [
+    "Phonk King",
+    "ICEDMANE",
+    "DYSMANE",
+    "NEKKZI",
+    "yvngust",
+    "llokwalkiki",
+    "Trihoof",
+    "Avenxir",
+    "SXCREDMANE",
+    "KLEAVE",
+    "NXVAMANE",
+    "Zericxxn",
+    "NICKRVZXR",
+    "KICKSTXP",
+    "WEXWHVT",
+    "STXLXN",
+    "AKXNESHIVA",
+    "SUCCESSXR",
+    "$hadowflex",
+    "DudePlaya",
+    "ZMAJOR",
+    "PHNKR",
+    "Rubikdice",
+    "NEOVERS",
+    "nightfxrce",
+    "RXDXVIL",
+    "BEATHXVEN",
+    "Mc Menor Do Alvorada",
+    "Synthizen",
+    "Ehumble flow",
+    "CryJaxx",
+    "MVRPHiN",
+    "4KBATU",
+    "F_xyz_n",
+    "EDJ V12",
+    "Eh6itam",
+    "h6itam",
+    "ALXGLS"
+  ],
+  "temas": [
+    {
+      "tema": "ENTITY.096",
+      "artistas": [
+        "KLEAVE",
+        "SXCREDMANE"
+      ]
+    },
+    {
+      "tema": "Raya",
+      "artistas": [
+        "Zericxxn"
+      ]
+    },
+    {
+      "tema": "NO REPLY",
+      "artistas": [
+        "NTPV",
+        "Sei Lean",
+        "GodDamn",
+        "Phonk King"
+      ]
+    },
+    {
+      "tema": "EXTINCTIO",
+      "artistas": [
+        "NEOVERS",
+        "DJ Zarek"
+      ]
+    },
+    {
+      "tema": "MONTAGEM GUERREIRO",
+      "artistas": [
+        "Avenxir",
+        "SUNJI"
+      ]
+    },
+    {
+      "tema": "crimson_echo!noise",
+      "artistas": [
+        "DudePlaya"
+      ]
+    },
+    {
+      "tema": "MUTILATOR",
+      "artistas": [
+        "ZMAJOR",
+        "Lurk"
+      ]
+    },
+    {
+      "tema": "QUANTUM 2.0",
+      "artistas": [
+        "PHNKR",
+        "dnvn",
+        "Phonk King"
+      ]
+    },
+    {
+      "tema": "FUNK TAKA",
+      "artistas": [
+        "ICEDMANE",
+        "DYSMANE"
+      ]
+    },
+    {
+      "tema": "MONTAGEM PEGADORA",
+      "artistas": [
+        "Rubikdice",
+        "Chilx",
+        "WAA"
+      ]
+    },
+    {
+      "tema": "target",
+      "artistas": [
+        "NICKRVZXR"
+      ]
+    },
+    {
+      "tema": "PULSO DE SILICIO",
+      "artistas": [
+        "KICKSTXP",
+        "Phonk King"
+      ]
+    },
+    {
+      "tema": "YOUNG AND FREE",
+      "artistas": [
+        "Onixio"
+      ]
+    },
+    {
+      "tema": "MONTAGEM OH! OH!",
+      "artistas": [
+        "WEXWHVT"
+      ]
+    },
+    {
+      "tema": "Little Doll",
+      "artistas": [
+        "CRÈME",
+        "STXLXN"
+      ]
+    },
+    {
+      "tema": "MONTAGEM PRA",
+      "artistas": [
+        "NEKKZI"
+      ]
+    },
+    {
+      "tema": "MONTAGEM TENTA",
+      "artistas": [
+        "merunes",
+        "DJ MH",
+        "MC K3",
+        "DJ Lucca 01"
+      ]
+    },
+    {
+      "tema": "Aurora",
+      "artistas": [
+        "DJ ABJ",
+        "ALXGLS",
+        "Duduzinho"
+      ]
+    },
+    {
+      "tema": "LUZ ROJA",
+      "artistas": [
+        "bxkq"
+      ]
+    },
+    {
+      "tema": "MONTAGEM UNKNOWN",
+      "artistas": [
+        "AKXNESHIVA",
+        "Avenxir",
+        "HamiBeats"
+      ]
+    },
+    {
+      "tema": "MONTAGEM ALQUIMIA",
+      "artistas": [
+        "Eh6itam",
+        "n7san7os",
+        "Mc Menor Do Alvorada"
+      ]
+    },
+    {
+      "tema": "DANÇA O 67",
+      "artistas": [
+        "4KBATU",
+        "MC LONE"
+      ]
+    },
+    {
+      "tema": "KONAMI",
+      "artistas": [
+        "Synthizen"
+      ]
+    },
+    {
+      "tema": "!nverted Confliction",
+      "artistas": [
+        "Ehumble flow"
+      ]
+    },
+    {
+      "tema": "REQUIEM",
+      "artistas": [
+        "yvngust"
+      ]
+    },
+    {
+      "tema": "ASTRAL FUNK",
+      "artistas": [
+        "SUCCESSXR",
+        "$hadowflex"
+      ]
+    },
+    {
+      "tema": "MONTAGEM CRYSTALIZADA",
+      "artistas": [
+        "yvngust"
+      ]
+    },
+    {
+      "tema": "AMOSTRA",
+      "artistas": [
+        "NEKKZI"
+      ]
+    },
+    {
+      "tema": "Sem Pressa",
+      "artistas": [
+        "NXVAMANE"
+      ]
+    },
+    {
+      "tema": "SENTA VAI",
+      "artistas": [
+        "F_xyz_n"
+      ]
+    },
+    {
+      "tema": "P*RRA",
+      "artistas": [
+        "2KE",
+        "TREN"
+      ]
+    },
+    {
+      "tema": "VÉRTIGO!",
+      "artistas": [
+        "CryJaxx",
+        "MVRPHiN",
+        "Lucy Malfroy",
+        "Phonk King"
+      ]
+    },
+    {
+      "tema": "COR CORA",
+      "artistas": [
+        "llokwalkiki",
+        "Trihoof",
+        "samxta!"
+      ]
+    },
+    {
+      "tema": "LIMINAR",
+      "artistas": [
+        "NEKKZI",
+        "Trihoof"
+      ]
+    },
+    {
+      "tema": "FOREVER DONE FUNK",
+      "artistas": [
+        "llokwalkiki"
+      ]
+    },
+    {
+      "tema": "MONTAGEM REINA",
+      "artistas": [
+        "HXRX"
+      ]
+    },
+    {
+      "tema": "MONTAGEM OSCURIDA",
+      "artistas": [
+        "RVNGE",
+        "Dhruv Vajasi"
+      ]
+    },
+    {
+      "tema": "MONTAGEM ELDER",
+      "artistas": [
+        "Dj Samir",
+        "Nulteex",
+        "John Bis.T",
+        "RXDXVIL"
+      ]
+    },
+    {
+      "tema": "why angels weep",
+      "artistas": [
+        "Phlame"
+      ]
+    },
+    {
+      "tema": "FUNK SERENO",
+      "artistas": [
+        "ICEDMANE",
+        "DYSMANE"
+      ]
+    },
+    {
+      "tema": "MONTAGEM ARCANO",
+      "artistas": [
+        "h6itam",
+        "BEATHXVEN",
+        "Mc Menor Do Alvorada"
+      ]
+    },
+    {
+      "tema": "FUNK ABNORMAL",
+      "artistas": [
+        "EDJ V12",
+        "SXID"
+      ]
+    },
+    {
+      "tema": "SEM CONTROLE",
+      "artistas": [
+        "nightfxrce"
+      ]
+    },
+    {
+      "tema": "SAUDADE",
+      "artistas": [
+        "NEKKZI"
+      ]
+    }
+  ]
+}

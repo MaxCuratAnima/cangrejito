@@ -1,0 +1,21 @@
+# lo de cada usuario (vive en %APPDATA%\Cangrejito; acá solo en instalaciones viejas)
+config.json
+temas_auto.json
+registro*.txt
+registro*.txt.*
+apagado.txt
+error-instalacion.txt
+
+# notas personales de desarrollo (para las sesiones de Claude Code de quien lo programa)
+CLAUDE.md
+CONTEXTO.md
+RETOMAR.md
+NOTAS.md
+
+# Python y empaquetado
+__pycache__/
+*.pyc
+build/
+dist/
+instalador/salida/
+*.tmp
