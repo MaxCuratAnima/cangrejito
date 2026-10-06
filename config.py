@@ -25,11 +25,17 @@ POR_DEFECTO = {
     'escala': 3,             # píxeles por unidad del dibujo
     'afk_minutos': 5,
     'charla': False,         # comentarios sueltos cada tanto (apagado: habla solo de lo que hace Claude)
+    'habla': 'normal',       # poco (solo lo importante), normal o mucho (y comentarios sueltos)
+    'detalle': 'detallado',  # corto (una frase) o detallado (lo que encontró y qué va a probar)
+    'groserias': True,       # alguna mala palabra suave de vez en cuando
+    'quejas': True,          # se queja un poquito cuando el proyecto viene largo
+    'animaciones_musica': True,  # baila con la música (guitarra con folklore, Camaro con phonk)
     'resumen_final': True,   # al terminar, dice la primera frase de la respuesta
     'comentar_musica': True,  # de vez en cuando festeja el tema nuevo de Spotify
     'artistas_funk': [],      # artistas extra con los que se sube al Camaro (además de los de funk/phonk)
     'artistas_guitarra': [],  # artistas extra con los que toca la guitarra de gaucho (además de los de folklore)
     'siempre_visible': False,  # aparecer aunque la app de Claude esté cerrada
+    'margen_abajo': None,    # px libres abajo si el sistema no avisa de su barra (None: automático; en WSL, 48)
     'modelo': str(rutas.VOZ / 'es_AR-daniela-high.onnx'),   # voz de Daniela (si no está, la baja)
     'python': '',            # solo corriendo desde el código: el pythonw.exe con PySide6 que usa el lanzador
     'xtts_python': '',       # opcional: pythonw.exe de un entorno con XTTS (coqui-tts); vacío = sin XTTS

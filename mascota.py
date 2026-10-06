@@ -13,6 +13,7 @@ Estados:
 from __future__ import annotations
 
 import math
+import os
 import random
 import time
 from collections import deque
@@ -22,7 +23,7 @@ from PySide6.QtGui import QColor, QCursor, QGuiApplication, QPainter
 from PySide6.QtWidgets import QApplication, QWidget
 
 import sprites as S
-from globo import Globo
+from globo import WINDOWS, Globo, banderas_flotante
 from sprites import Pose
 
 TRABAJOS = {'pensar', 'teclear', 'terminal', 'leer', 'buscar', 'web', 'llamar', 'preguntar'}
@@ -42,6 +43,17 @@ def _fase_mate(u: float) -> str:
     return 'mano' if u < 19 else 'dejado'
 
 
+def _en_wsl() -> bool:
+    if os.environ.get('WSL_DISTRO_NAME'):
+        return True
+    try:
+        with open('/proc/version') as f:
+            return 'microsoft' in f.read().lower()
+    except OSError:
+        return False
+
+
+MARGEN_WSL = 48 if _en_wsl() else 0      # alto de la barra de tareas de Windows (a escala 100 %)
 GRAVEDAD = 2600.0
 VEL_PASEO = 42.0
 COLORES_CONFETI = ['o', 'y', 'n', 'B', 'r', 'w', 'c']
@@ -54,9 +66,7 @@ class Mascota(QWidget):
     se_fue = Signal()
 
     def __init__(self, cfg, voz):
-        super().__init__(None, Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
-                         | Qt.WindowType.Tool | Qt.WindowType.NoDropShadowWindowHint
-                         | Qt.WindowType.WindowDoesNotAcceptFocus)
+        super().__init__(None, banderas_flotante(Qt.WindowType.WindowDoesNotAcceptFocus))
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.cfg = cfg
@@ -108,6 +118,7 @@ class Mascota(QWidget):
         self._clic.setSingleShot(True)
         self._clic.timeout.connect(self.clic_silencio.emit)
 
+        self.prox_subir = 0.0            # Linux: cada tanto se sube arriba de las otras ventanas
         self.t0 = self._ult = time.monotonic()
         self._timer = QTimer(self)
         self._timer.setTimerType(Qt.TimerType.PreciseTimer)
@@ -182,7 +193,7 @@ class Mascota(QWidget):
 
     def _mudarse(self, pant):
         """Aparece en otra pantalla cayendo desde arriba (sin pasar por el monitor tapado)."""
-        ag = pant.availableGeometry()
+        ag = self._area(pant)
         izq, der = self._limites(ag)
         x = self.cfg.get('x_' + pant.name())
         self.px = float(x) if x is not None and izq <= x <= der else float(der - 200)
@@ -217,7 +228,7 @@ class Mascota(QWidget):
         libres = [s for s in QGuiApplication.screens() if s.name() not in self.tapados]
         if pant.name() in self.tapados and libres:
             pant = libres[0]
-        ag = pant.availableGeometry()
+        ag = self._area(pant)
         destino = self.cfg.get('x')
         izq, der = self._limites(ag)
         if destino is None or not (izq <= destino <= der):
@@ -240,7 +251,7 @@ class Mascota(QWidget):
         if self.modo == 'oculto':
             return
         self._guardar_posicion()
-        ag = self._pantalla_actual().availableGeometry()
+        ag = self._area(self._pantalla_actual())
         centro = self.px + S.W * self.E / 2
         self.dir = 1 if centro > ag.center().x() else -1
         self.momento('despedida', 2.2)
@@ -265,11 +276,17 @@ class Mascota(QWidget):
             return
         actual = self._pantalla_actual()
         otra = pantallas[(pantallas.index(actual) + 1) % len(pantallas)]
-        ag = otra.availableGeometry()
+        ag = self._area(otra)
         self.px = ag.center().x() - S.W * self.E / 2
         self.py = ag.top() + 80
         self.vx, self.vy = 0.0, 0.0
         self.modo = 'cayendo'
+
+    def subir(self):
+        """Arriba de todas las ventanas (en Linux no hay administrador que lo haga por nosotros)."""
+        self.raise_()
+        if self.globo.isVisible():
+            self.globo.raise_()
 
     def hwnds(self):
         out = []
@@ -292,6 +309,16 @@ class Mascota(QWidget):
             if s.name() == nombre:
                 return s
         return QGuiApplication.primaryScreen()
+
+    def _area(self, pant) -> QRect:
+        """Lo usable de la pantalla. Si el sistema no descuenta ninguna barra (pasa en WSL: la pantalla de
+        Linux no sabe de la barra de tareas de Windows), deja «margen_abajo» libre para no quedar detrás."""
+        ag = pant.availableGeometry()
+        margen = self.cfg.get('margen_abajo')
+        margen = MARGEN_WSL if margen is None else int(margen)
+        if margen and ag.bottom() >= pant.geometry().bottom():
+            ag = ag.adjusted(0, 0, 0, -margen)
+        return ag
 
     def _piso(self, ag: QRect) -> float:
         return ag.bottom() + 1 - S.PIES * self.E
@@ -336,6 +363,9 @@ class Mascota(QWidget):
             return
         self._paseos(ahora)
         self._reloj_mate(ahora)
+        if not WINDOWS and ahora >= self.prox_subir:
+            self.prox_subir = ahora + 2.0
+            self.subir()
         pose = self._pose(ahora)
         img = S.dibujar(pose)
         self._mover_particulas(dt, ahora)
@@ -353,7 +383,7 @@ class Mascota(QWidget):
         if self.globo.tick(dt):
             cx, _ = self._cabeza()
             tope = min(t for _, t in self.topes) if self.topes else S.OY + 16
-            self.globo.seguir(x + cx, y + (tope - 1) * self.E, self._pantalla_actual().availableGeometry(),
+            self.globo.seguir(x + cx, y + (tope - 1) * self.E, self._area(self._pantalla_actual()),
                               y + S.H * self.E)
         # quieto y sin nada que animar: 15 cuadros por segundo alcanzan
         tranquilo = (self.modo == 'suelo' and not self.mom and self.paseo not in ('caminar', 'auto')
@@ -369,7 +399,7 @@ class Mascota(QWidget):
         if self.modo == 'agarrado':
             return
         pant = self._pantalla_actual()
-        ag = pant.availableGeometry()
+        ag = self._area(pant)
         piso = self._piso(ag)
         centro = self.px + S.W * E / 2
 
@@ -384,7 +414,7 @@ class Mascota(QWidget):
             techo = ag.top() - (S.OY + 10) * E
             if self.py < techo and self.vy < 0:
                 self.vy = abs(self.vy) * 0.3
-            piso = self._piso(self._pantalla_actual().availableGeometry())
+            piso = self._piso(self._area(self._pantalla_actual()))
             if self.py >= piso:
                 self.py = piso
                 if self.vy > 520:
@@ -539,9 +569,10 @@ class Mascota(QWidget):
             p.brazos = (izq, 'sostener')
 
     def _paseos(self, ahora: float):
-        if self.paseo == 'guitarra' and not (self.musica and self.guitarra):
+        if self.paseo == 'guitarra' and not (self.musica and self.guitarra
+                                             and self.cfg.get('animaciones_musica', True)):
             self.paseo, self.paseo_fin = 'quieto', 0.0       # cambió el tema o se cortó: deja la guitarra
-        if self.paseo == 'auto' and not (self.musica and self.funk):
+        if self.paseo == 'auto' and not (self.musica and self.funk and self.cfg.get('animaciones_musica', True)):
             self.paseo, self.paseo_fin, self.vx = 'quieto', 0.0, 0.0   # se bajó del auto
         if self.paseo == 'auto' and self.escuchando:
             return                                               # te escucha sin bajarse
@@ -568,7 +599,7 @@ class Mascota(QWidget):
                 return
             # si no, algo de lo de siempre (caminar, sentarse, el mate…)
         # con música y sin nada que hacer: baila o se la escucha con los auriculares
-        if self.musica and not self.escuchando and not juego:
+        if self.musica and not self.escuchando and not juego and self.cfg.get('animaciones_musica', True):
             if self.paseo in ('auriculares', 'guitarra', 'auto') and ahora < self.paseo_fin:
                 return
             if self.funk and random.random() < 0.85:
@@ -590,7 +621,7 @@ class Mascota(QWidget):
         if ahora < self.paseo_fin:
             return
         r = random.random()
-        ag = self._pantalla_actual().availableGeometry()
+        ag = self._area(self._pantalla_actual())
         izq, der = self._limites(ag)
         noche = time.localtime().tm_hour < 6
         # pasatiempos largos: jueguito en el celu o música propia con auriculares
@@ -683,7 +714,7 @@ class Mascota(QWidget):
 
         if self.ayudantes > 0:
             quiero.add('ayudante')
-        if self.musica and self.guitarra:
+        if self.musica and self.guitarra and self.cfg.get('animaciones_musica', True):
             quiero.add('gaucho')
         if self.paseo == 'auto' and self.modo == 'suelo' and self.base == 'libre':
             # sentado adentro del Camaro descapotable, con lentes

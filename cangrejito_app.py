@@ -19,10 +19,11 @@ sys.path.insert(0, str(AQUI))
 
 from PySide6.QtCore import QBuffer, QIODevice, QPoint, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QImage, QPainter, QPixmap
-from PySide6.QtWidgets import QApplication, QInputDialog, QMenu, QMessageBox, QSystemTrayIcon
+from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 import version
 
+import configuracion
 import eventos
 import rutas
 import sprites as S
@@ -66,13 +67,6 @@ def _icono() -> QIcon:
     return QIcon(QPixmap.fromImage(grande))
 
 
-def _preguntar_nombre(cfg):
-    """La primera vez: ¿cómo te llamo? (lo usa en todas las frases)."""
-    nombre, ok = QInputDialog.getText(None, 'Cangrejito', '¡Hola! Soy tu cangrejito. ¿Cómo te llamo?')
-    cfg['nombre'] = (nombre or '').strip()[:30] if ok and (nombre or '').strip() else 'compa'
-    cfg.guardar()
-
-
 def main():
     _registro()
     args = set(sys.argv[1:])
@@ -91,10 +85,12 @@ def main():
         log.info('ya hay otro cangrejito andando: salgo')
         return
     log.info('arranca el cangrejito')
-    if not cfg.get('nombre'):
-        _preguntar_nombre(cfg)
 
     voz = Voz(cfg)
+    if not cfg.get('nombre'):
+        # la primera vez: bienvenida con la configuración (nombre, cuánto habla, personalidad, voz)
+        configuracion.abrir(cfg, lambda: voz.decir(f'¡Hola, {cfg["nombre"] or "compa"}! Así sueno yo.',
+                                                    cortar=True), bienvenida=True)
     voz.precalentar(Narrador.frases_fijas(cfg['nombre']))
     m = Mascota(cfg, voz)
     vig = Vigilante(cfg, m.hwnds)
@@ -103,38 +99,82 @@ def main():
     nar.oculto = True
 
     # ---------------------------------------------------------------- menú (clic derecho y bandeja)
+    # Todo lo que se configura está acá, en submenús, como el menú del clic derecho de Windows.
+    # Cada vez que se abre, marca lo que dice la config (que también cambia la ventana de Configuración).
     menu = QMenu()
-    a_silencio = QAction('Silenciar la voz', menu, checkable=True, checked=cfg['silencio'])
-    menu.addAction(a_silencio)
-    sub_vol = menu.addMenu('Volumen')
-    grupo = QActionGroup(sub_vol)
-    for pct in (25, 50, 75, 100):
-        a = QAction(f'{pct} %', sub_vol, checkable=True, checked=round(cfg['volumen'] * 100) == pct)
-        a.triggered.connect(lambda _=False, v=pct / 100: _volumen(v))
-        grupo.addAction(a)
-        sub_vol.addAction(a)
-    sub_motor = menu.addMenu('Voz')
-    grupo_motor = QActionGroup(sub_motor)
-    motores = (('xtts', 'XTTS argentina (placa de video)'), ('daniela', 'Daniela (liviana)'))
-    for clave, texto in motores if cfg.get('xtts_python') else motores[1:]:
-        a = QAction(texto, sub_motor, checkable=True, checked=cfg.get('motor') == clave)
-        a.triggered.connect(lambda _=False, k=clave: _motor(k))
-        grupo_motor.addAction(a)
-        sub_motor.addAction(a)
-    a_probar = menu.addAction('Probar la voz')
-    a_acerca = menu.addAction('Acerca del Cangrejito')
+    sincronizar = []
+
+    def poner(clave, valor):
+        cfg[clave] = valor
+        cfg.guardar()
+        nar._al_dia()
+
+    def opciones(padre, titulo, clave, valores, cercano=False):
+        sub = padre.addMenu(titulo)
+        grupo = QActionGroup(sub)
+        acciones = []
+        for valor, texto in valores:
+            a = QAction(texto, sub, checkable=True)
+            a.triggered.connect(lambda _=False, v=valor: poner(clave, v))
+            grupo.addAction(a)
+            sub.addAction(a)
+            acciones.append((a, valor))
+
+        def marcar():
+            actual = cfg.get(clave)
+            if cercano:              # números (volumen, velocidad): el más parecido
+                elegido = min(acciones, key=lambda av: abs(av[1] - float(actual or 0)))[0]
+            else:
+                elegido = next((a for a, v in acciones if v == actual), None)
+            for a, _ in acciones:
+                a.setChecked(a is elegido)
+        sincronizar.append(marcar)
+        return sub
+
+    def interruptor(padre, texto, clave, defecto=True):
+        a = QAction(texto, padre, checkable=True)
+        a.triggered.connect(lambda si: poner(clave, si))
+        padre.addAction(a)
+        sincronizar.append(lambda: a.setChecked(bool(cfg.get(clave, defecto))))
+
+    a_config = menu.addAction('Configuración…')
+    menu.addSeparator()
+    opciones(menu, 'Cuánto habla', 'habla', configuracion.HABLA_MENU)
+    opciones(menu, 'Comentarios', 'detalle', configuracion.DETALLE_MENU)
+    sub_personalidad = menu.addMenu('Personalidad')
+    interruptor(sub_personalidad, 'Malas palabras suaves', 'groserias')
+    interruptor(sub_personalidad, 'Se queja de los proyectos largos', 'quejas')
+    sub_musica = menu.addMenu('Música')
+    interruptor(sub_musica, 'Comenta los temas de Spotify', 'comentar_musica')
+    interruptor(sub_musica, 'Baila (guitarra con folklore, Camaro con phonk)', 'animaciones_musica')
+    sub_voz = menu.addMenu('Voz')
+    a_silencio = QAction('Silenciar', sub_voz, checkable=True)
+    sub_voz.addAction(a_silencio)
+    sincronizar.append(lambda: a_silencio.setChecked(bool(cfg['silencio'])))
+    opciones(sub_voz, 'Volumen', 'volumen', configuracion.VOLUMEN, cercano=True)
+    opciones(sub_voz, 'Velocidad', 'velocidad', configuracion.VELOCIDAD, cercano=True)
+    if cfg.get('xtts_python'):                # solo si hay XTTS configurado (opcional, desde el código)
+        sub_motor = sub_voz.addMenu('Motor de voz')
+        grupo_motor = QActionGroup(sub_motor)
+        for clave, texto in (('xtts', 'XTTS argentina (placa de video)'), ('daniela', 'Daniela (liviana)')):
+            a = QAction(texto, sub_motor, checkable=True, checked=cfg.get('motor') == clave)
+            a.triggered.connect(lambda _=False, k=clave: _motor(k))
+            grupo_motor.addAction(a)
+            sub_motor.addAction(a)
+    sub_voz.addSeparator()
+    a_probar = sub_voz.addAction('Probar la voz')
+    menu.aboutToShow.connect(lambda: [f() for f in sincronizar])
     menu.addSeparator()
     a_dormir = menu.addAction('Dormir / despertar')
     a_monitor = menu.addAction('Llevar al otro monitor')
-    a_siempre = QAction('Mostrar aunque Claude esté cerrado', menu, checkable=True,
-                        checked=cfg['siempre_visible'])
-    menu.addAction(a_siempre)
     menu.addSeparator()
+    a_acerca = menu.addAction('Acerca del Cangrejito')
     a_salir = menu.addAction('Salir')
 
-    def _volumen(v):
-        cfg['volumen'] = v
-        cfg.guardar()
+    def configurar():
+        configuracion.abrir(cfg, lambda: nar.decir(f'¡Hola, {cfg["nombre"]}! Así sueno yo.', alta=True))
+        a_silencio.setChecked(cfg['silencio'])
+        nar._al_dia()
 
     def _motor(k):
         cfg['motor'] = k
@@ -162,10 +202,6 @@ def main():
             m.actividad('libre')
             m.dormir()
 
-    def siempre(si):
-        cfg['siempre_visible'] = si
-        cfg.guardar()
-
     a_silencio.triggered.connect(lambda _=False: alternar_silencio())
     a_probar.triggered.connect(lambda: nar.decir(f'¡Hola, {cfg["nombre"]}! Así sueno yo.', alta=True))
     a_acerca.triggered.connect(lambda: QMessageBox.about(
@@ -178,7 +214,7 @@ def main():
         'Proyecto de fan, no oficial: no está afiliado a Anthropic.'))
     a_dormir.triggered.connect(dormir_despertar)
     a_monitor.triggered.connect(m.llevar_a_otro_monitor)
-    a_siempre.triggered.connect(siempre)
+    a_config.triggered.connect(configurar)
     def salir():
         # «Salir» vale hasta que cierres esta app de Claude: el lanzador no lo vuelve a abrir antes
         try:

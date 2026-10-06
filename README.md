@@ -39,8 +39,10 @@ No hace falta saber nada de GitHub: tocá el botón de tu sistema y se baja solo
 2. Descomprimilo: clic derecho → **Extraer aquí**.
 3. Abrí la carpeta en una terminal y escribí `./instalar.sh`. Te guía paso a paso.
 
-La primera vez te pregunta cómo llamarte y baja su voz (unos 110 MB, una sola vez). Después aparece solo
-cuando usás Claude, y se despide cuando lo cerrás.
+La primera vez te da la bienvenida: le decís cómo llamarte y cómo querés que sea (si habla mucho o poco,
+si comenta corto o al detalle, su personalidad y su voz), y baja su voz (unos 110 MB, una sola vez).
+Después aparece solo cuando abrís Claude, y se despide cuando lo cerrás. Todo se cambia después con
+clic derecho sobre el cangrejito.
 
 > **¿Qué necesito?** [Claude Code](https://claude.com/claude-code), con cualquier cuenta. En Windows,
 > con la app de escritorio de Claude o con la terminal. En Linux, con la terminal. Todas las versiones
@@ -93,7 +95,7 @@ Además camina, se sienta, juega con el celular, se duerme cuando no estás y te
 | Clic | Se calla o vuelve a hablar |
 | Doble clic | Se pone mimoso |
 | Arrastrar | Lo levantás; si lo sacudís, se marea |
-| Clic derecho | Abre el menú: volumen, dormir, otro monitor, «Acerca de» |
+| Clic derecho | Abre el menú con toda la configuración: cuánto habla, comentarios cortos o detallados, personalidad, música, volumen y velocidad de la voz |
 
 <p align="center"><img src="docs/poses.png" alt="Algunas poses del cangrejito" width="90%"></p>
 
@@ -127,7 +129,7 @@ Al desinstalar se saca todo lo del cangrejito y Claude Code queda como estaba. S
   `sudo apt install x11-utils xprintidle playerctl libportaudio2`. Sin esos programas anda igual, pero
   esas partes se apagan.
 - **Cuándo aparece:** en Linux no hay app de escritorio de Claude, así que aparece cuando corre Claude
-  Code. Para verlo siempre, activá «siempre visible» en la instalación.
+  Code y se va cuando lo cerrás.
 - **Dictado:** todavía no detecta cuándo le dictás a Claude.
 </details>
 

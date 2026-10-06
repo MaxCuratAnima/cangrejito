@@ -159,13 +159,17 @@ CASTELLANO = {'el', 'la', 'los', 'las', 'de', 'del', 'en', 'y', 'para', 'con', '
 
 
 NOMBRE = {'n': 'compa'}
+PREFERENCIAS = {'groserias': True}         # lo actualiza el narrador con la configuración
+GROSERAS = re.compile(r'puta|al pedo|porquer|paja|carajo|mierda', re.I)
 _recientes: dict[int, deque] = {}
 
 
 def _uno(lista, **kw) -> str:
-    """Una frase al azar de la lista, sin repetir las últimas que ya dijo de esa misma lista."""
+    """Una frase al azar de la lista, sin repetir las últimas que ya dijo de esa misma lista
+    (y sin malas palabras si en la configuración no las quieren)."""
     usadas = _recientes.setdefault(id(lista), deque(maxlen=max(1, len(lista) // 2)))
-    opciones = [f for f in lista if f not in usadas] or lista
+    permitidas = lista if PREFERENCIAS['groserias'] else ([f for f in lista if not GROSERAS.search(f)] or lista)
+    opciones = [f for f in permitidas if f not in usadas] or permitidas
     f = random.choice(opciones)
     usadas.append(f)
     return f.format(**{**NOMBRE, **kw})
@@ -385,6 +389,21 @@ class Narrador(QObject):
     def n(self) -> str:
         return self.cfg['nombre']
 
+    # ------------------------------------------------------------ preferencias (ventana de Configuración)
+    def _habla(self) -> str:
+        """poco (solo lo importante), normal o mucho (todo, y comentarios sueltos)."""
+        return self.cfg.get('habla', 'normal')
+
+    def _sobre_claude(self, texto: str) -> str:
+        """Lo que escribió Claude: una frase corta o dos frases, según «detalle»."""
+        if self.cfg.get('detalle', 'detallado') == 'corto':
+            return primera_frase(texto, 120)
+        return primera_frase(texto, 280, cuantas=2)
+
+    def _al_dia(self):
+        PREFERENCIAS['groserias'] = bool(self.cfg.get('groserias', True))
+        NOMBRE['n'] = self.cfg.get('nombre') or 'compa'
+
     # ------------------------------------------------------------ hablar
     def decir(self, texto: str, alta: bool = False, clave: str | None = None, repetir: float = 9.0,
               sub: str | None = None, dur: float | None = None, importante: bool = False):
@@ -439,7 +458,8 @@ class Narrador(QObject):
         # charla de vez en cuando, si no hay nada que hacer y estás en la compu
         if ahora >= self.prox_charla:
             self.prox_charla = ahora + random.uniform(1200, 2400)
-            if not self.alguna_ocupada() and not self.afk and self.cfg.get('charla', True) \
+            if not self.alguna_ocupada() and not self.afk \
+                    and (self.cfg.get('charla', False) or self._habla() == 'mucho') \
                     and self.m.base == 'libre' and not self.escuchando:
                 h = datetime.now().hour
                 if h < 6:
@@ -452,7 +472,7 @@ class Narrador(QObject):
             self.libre_desde = None
         elif self.libre_desde is None:
             self.libre_desde = ahora
-        elif ahora - self.libre_desde > 1800 and 9 <= datetime.now().hour < 24:
+        elif ahora - self.libre_desde > 1800 and 9 <= datetime.now().hour < 24 and self._habla() != 'poco':
             self.libre_desde = ahora
             if ahora - self.ult_clave.get('aburrido', -1e9) > 5400:
                 self.m.momento('saludar', 1.6)
@@ -516,6 +536,7 @@ class Narrador(QObject):
             except Exception:
                 log.exception('uso')
             return
+        self._al_dia()
         sid = d.get('session_id', '')
         s = self._sesion(sid)
         nombre = self._nombre_sesion(sid, d.get('cwd') or '')
@@ -543,7 +564,8 @@ class Narrador(QObject):
                 s['ocupada'], s['stop_t'] = True, -1e9
                 self.m.actividad('pensar')
                 self.m.momento('sorpresa', 0.9)
-                self.decir(_uno(PEDIDO), clave='pedido', repetir=4, sub=sub)
+                if self._habla() != 'poco':
+                    self.decir(_uno(PEDIDO), clave='pedido', repetir=4, sub=sub)
             elif tipo == 'PreToolUse':
                 if ahora - s['stop_t'] < 1.5 or d.get('tool_use_id') in self.hechas:
                     return
@@ -568,10 +590,12 @@ class Narrador(QObject):
                     if len([e for e in self.errores if ahora - e < 180]) >= 3:
                         self.errores.clear()
                         self.m.momento('frustrado', 2.2)
-                        self.decir(_uno(FRUSTRADO), clave='frustrado', repetir=120, sub=sub)
+                        if self._habla() != 'poco':
+                            self.decir(_uno(FRUSTRADO), clave='frustrado', repetir=120, sub=sub)
                     else:
                         self.m.momento('error', 1.8)
-                        self.decir(_uno(ERROR), clave='error', repetir=30, sub=sub)
+                        if self._habla() != 'poco':
+                            self.decir(_uno(ERROR), clave='error', repetir=30, sub=sub)
                 if s['ocupada']:
                     self.m.despues_de_herramienta()
             elif tipo == 'Notification':
@@ -600,14 +624,14 @@ class Narrador(QObject):
                     texto = d.get('last_assistant_message') or ''
                     if not texto and d.get('transcript_path') and self.cfg.get('resumen_final', True):
                         texto = ultimo_mensaje_del_transcript(d['transcript_path'])
-                    frase = primera_frase(texto, 260, cuantas=2) if self.cfg.get('resumen_final', True) else ''
+                    frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
                     self.decir(f'{_uno(FIN_LARGO, n=n)} {frase}'.strip(), alta=True, sub=sub, dur=10)
                     return
                 self.m.momento('orgulloso' if largo else 'festejar', 2.8 if largo else 2.4)
                 texto = d.get('last_assistant_message') or ''
                 if not texto and d.get('transcript_path') and self.cfg.get('resumen_final', True):
                     texto = ultimo_mensaje_del_transcript(d['transcript_path'])
-                frase = primera_frase(texto, 260, cuantas=2) if self.cfg.get('resumen_final', True) else ''
+                frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
                 # si la respuesta ya arranca con «Listo…», no lo decimos dos veces
                 listo = '' if re.match(r'(¡\s*)?(listo|ya está|terminé|hecho)\b', frase, re.I) \
                     else _uno(ORGULLO if largo else LISTO)
@@ -628,13 +652,15 @@ class Narrador(QObject):
         """La app guarda lo que escribió Claude recién después del control de permisos (unos segundos):
         lo vuelve a buscar y, si es nuevo, lo cuenta."""
         tid = d.get('tool_use_id') or ''
+        if self._habla() == 'poco':
+            return False
         texto, _, uid = explicacion_de(d.get('transcript_path') or '', tid) if tid else ('', '', '')
         if not uid or uid in self.explicados or not texto or not _es_castellano(texto):
             return False
         self.explicados.append(uid)
         self._actual = (sid, sub or '')
         try:
-            self.decir(primera_frase(texto, 280, cuantas=2), sub=sub, importante=True)
+            self.decir(self._sobre_claude(texto), sub=sub, importante=True)
         finally:
             self._actual = None
         return True
@@ -642,6 +668,8 @@ class Narrador(QObject):
     def _paso(self, d, sid, s, sub, act, frase, alta, clave):
         """Narra un paso de Claude: lo que te escribió en el chat, lo que piensa o qué herramienta usa."""
         ahora = time.monotonic()
+        if self._habla() == 'poco' and not alta:
+            return                      # habla poco: solo lo importante (permisos, preguntas, listo)
         self._actual = (sid, sub or '')
         try:
             # el «para qué»: lo que Claude escribió justo antes de este paso
@@ -656,7 +684,7 @@ class Narrador(QObject):
             importante = False
             if nuevo and texto and not alta and _es_castellano(texto):
                 # lo que Claude te contó en el chat (hallazgos, qué va a probar y por qué)
-                frase, clave, importante = primera_frase(texto, 280, cuantas=2), None, True
+                frase, clave, importante = self._sobre_claude(texto), None, True
             elif nuevo and piensa and _es_castellano(piensa):
                 resumen = primera_frase(piensa, 150)
                 if not alta and ahora - self.ult_pensamiento > 20:
@@ -676,7 +704,7 @@ class Narrador(QObject):
                 frase, clave = largo, 'tardar'
                 self.para_despues.pop(tid, None)
             # con los años que lleva laburando, se le nota el humor
-            humor = None if alta or importante else self._humor(s, ahora)
+            humor = None if alta or importante or not self.cfg.get('quejas', True) else self._humor(s, ahora)
             if humor:
                 frase, clave = humor, None
             casi = self._avance(d.get('tool_name') or '', d.get('tool_input') or {})
@@ -714,6 +742,8 @@ class Narrador(QObject):
     def _tarda(self, tid: str, sid: str, sub):
         """La herramienta sigue después de 9 s: cuenta para qué es (una vez por minuto como mucho)."""
         explicacion = self.para_despues.pop(tid, '')
+        if self._habla() == 'poco':
+            return
         if tid in self.hechas or not (self.estado.get(sid) or {}).get('ocupada'):
             return
         ahora = time.monotonic()
@@ -851,6 +881,8 @@ class Narrador(QObject):
 
     def _tarda_mucho(self, tid: str, sid: str, sub):
         """La misma herramienta lleva más de un minuto: se impacienta."""
+        if self._habla() == 'poco':
+            return
         if tid in self.hechas or not (self.estado.get(sid) or {}).get('ocupada'):
             return
         self._actual = (sid, sub or '')

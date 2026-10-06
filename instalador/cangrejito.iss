@@ -4,7 +4,7 @@
 ; Sale en instalador\salida\CangrejitoSetup.exe
 
 ; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
-#define Version "1.1.0"
+#define Version "1.2.0"
 #ifndef Dist
   #define Dist "..\dist\Cangrejito"
 #endif
@@ -76,7 +76,6 @@ UninstalledAll=El Cangrejito se desinstaló. ¡Chau!
 
 [Tasks]
 Name: "narracion"; Description: "Narración en castellano: pedirle a Claude Code que explique cada paso en castellano (agrega unas reglas a tu CLAUDE.md global)"
-Name: "siempre"; Description: "Mostrarlo aunque la app de Claude esté cerrada (si usás Claude Code en la terminal)"; Flags: unchecked
 
 [Files]
 Source: "{#Dist}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -87,10 +86,8 @@ Name: "{userprograms}\Cangrejito"; Filename: "{app}\Cangrejito.exe"; Parameters:
 
 [Run]
 ; conecta Claude Code con el cangrejito (hooks en %USERPROFILE%\.claude\settings.json, con copia de seguridad)
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks"; Flags: runhidden waituntilterminated; Tasks: not narracion and not siempre
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks --narracion"; Flags: runhidden waituntilterminated; Tasks: narracion and not siempre
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks --siempre-visible"; Flags: runhidden waituntilterminated; Tasks: not narracion and siempre
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks --narracion --siempre-visible"; Flags: runhidden waituntilterminated; Tasks: narracion and siempre
+Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks"; Flags: runhidden waituntilterminated; Tasks: not narracion
+Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks --narracion"; Flags: runhidden waituntilterminated; Tasks: narracion
 Filename: "{app}\Cangrejito.exe"; Parameters: "--lanzador"; Description: "Arrancar el cangrejito ahora"; Flags: nowait postinstall
 
 [UninstallRun]

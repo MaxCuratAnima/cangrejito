@@ -80,14 +80,11 @@ pie; seguir
 
 # ── 4. Opciones ───────────────────────────────────────────────
 cabecera "· opciones"
-echo "  En Linux no hay app de escritorio de Claude: el cangrejito aparece cuando corre Claude Code."
+echo "  El cangrejito acompaña a Claude: aparece cuando corre Claude Code y se va cuando lo cerrás."
 echo
 OPC=()
 if preguntar "¿Narración en castellano? (le pide a Claude Code que explique cada paso; recomendado)" s; then
     OPC+=(--narracion)
-fi
-if preguntar "¿Mostrarlo siempre, aunque Claude Code no esté abierto?" n; then
-    OPC+=(--siempre-visible)
 fi
 pie
 

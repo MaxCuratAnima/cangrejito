@@ -40,6 +40,13 @@ def preparar():
         shutil.copy2(CODIGO / 'temas_auto.ejemplo.json', DATOS / 'temas_auto.json')
 
 
+def es_claude_code_suelto(ruta: str) -> bool:
+    """Claude Code corriendo en una terminal: un claude.exe que no es la app de escritorio ni el Claude Code
+    que la app trae adentro (%APPDATA%\\Claude\\claude-code\\…, que se cierra con ella)."""
+    r = (ruta or '').lower()
+    return r.endswith('\\claude.exe') and not es_app_claude(r) and '\\claude\\claude-code\\' not in r
+
+
 def es_app_claude(ruta: str) -> bool:
     """El claude.exe de la app de escritorio (Microsoft Store o instalador clásico), no el de Claude Code."""
     r = (ruta or '').lower()

@@ -83,7 +83,21 @@ if rutas.WINDOWS:
             return True
 
         user32.EnumWindows(ENUM(cb), 0)
-        return pids
+        return pids or pids_claude_code()
+
+    psapi = ctypes.windll.psapi
+
+    def pids_claude_code() -> set:
+        """Claude Code corriendo en una terminal (el claude.exe que no es la app de escritorio)."""
+        lista = (wt.DWORD * 4096)()
+        usados = wt.DWORD()
+        if not psapi.EnumProcesses(lista, ctypes.sizeof(lista), ctypes.byref(usados)):
+            return set()
+        out = set()
+        for pid in lista[:usados.value // 4]:
+            if rutas.es_claude_code_suelto(_ruta(pid)):
+                out.add(pid)
+        return out
 
     def unica_instancia() -> bool:
         kernel32.CreateMutexW(None, False, 'Local\\cangrejito-lanzador')

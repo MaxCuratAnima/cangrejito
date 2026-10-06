@@ -4,6 +4,7 @@
 """Globo de diálogo pixelado que sigue al cangrejito (se ve aunque la voz esté silenciada)."""
 from __future__ import annotations
 
+import sys
 import time
 
 from PySide6.QtCore import QRect, Qt
@@ -18,13 +19,25 @@ ANCHO_MAX = 290
 MARGEN = 10
 COLA = 8          # alto de la colita
 FUENTES = ['Segoe UI', 'Noto Sans', 'DejaVu Sans', 'Liberation Sans']   # la primera que haya (Windows, Linux)
+WINDOWS = sys.platform == 'win32'
+
+
+def banderas_flotante(*extra):
+    """Ventana flotante sin marco y siempre encima (la del cangrejito y la del globo).
+    En Windows es una ventana «herramienta» (no aparece en la barra de tareas). En Linux va sin
+    administrador de ventanas: las «herramienta» dependen de una ventana invisible de Qt y WSLg no
+    las muestra; así se ven en WSL, X11 y XWayland. Arriba de todo la mantiene Mascota.subir()."""
+    b = Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.NoDropShadowWindowHint
+    b |= Qt.WindowType.Tool if WINDOWS else Qt.WindowType.X11BypassWindowManagerHint
+    for e in extra:
+        b |= e
+    return b
 
 
 class Globo(QWidget):
     def __init__(self):
-        super().__init__(None, Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
-                         | Qt.WindowType.Tool | Qt.WindowType.NoDropShadowWindowHint
-                         | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
+        super().__init__(None, banderas_flotante(Qt.WindowType.WindowDoesNotAcceptFocus,
+                                                 Qt.WindowType.WindowTransparentForInput))
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.fuente = QFont()

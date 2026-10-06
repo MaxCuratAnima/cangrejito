@@ -136,23 +136,29 @@ def monitores_en_pantalla_completa(propias: set[int], ventanas=None) -> dict[tup
 
 JUEGOS_PESADOS = {'vrchat.exe', 'vrserver.exe', 'vrmonitor.exe', 'vrcompositor.exe'}   # VR: la placa va al 100 %
 _pesado = [False]
+_cli = [False]
 
 
 def pids_app_claude() -> set[int]:
-    """Procesos de la app de escritorio de Claude (Store o instalador clásico), no los de Claude Code.
-    De paso anota si hay VRChat o SteamVR abiertos (en _pesado)."""
+    """Procesos de la app de escritorio de Claude (Store o instalador clásico). De paso anota si hay
+    Claude Code corriendo en una terminal (en _cli) y si hay VRChat o SteamVR abiertos (en _pesado)."""
     pids = set()
-    pesado = False
+    pesado = cli = False
     for p in psutil.process_iter(['name']):
         try:
             nombre = (p.info['name'] or '').lower()
             if nombre in JUEGOS_PESADOS:
                 pesado = True
-            if nombre == 'claude.exe' and rutas.es_app_claude(p.exe()):
-                pids.add(p.pid)
+            if nombre == 'claude.exe':
+                ruta = p.exe()
+                if rutas.es_app_claude(ruta):
+                    pids.add(p.pid)
+                elif rutas.es_claude_code_suelto(ruta):
+                    cli = True                      # Claude Code en la terminal
         except (psutil.Error, OSError):
             continue
     _pesado[0] = pesado
+    _cli[0] = cli
     return pids
 
 
@@ -193,8 +199,8 @@ def ventanas():
 
 
 def app_claude_abierta(ventanas_, pids: set[int]) -> bool:
-    """La app de Claude tiene alguna ventana con título."""
-    return any(pid in pids and user32.GetWindowTextLengthW(h) > 0 for h, pid in ventanas_)
+    """Claude está abierto: la app tiene alguna ventana con título, o corre Claude Code en una terminal."""
+    return _cli[0] or any(pid in pids and user32.GetWindowTextLengthW(h) > 0 for h, pid in ventanas_)
 
 
 def hay_vr() -> bool:
