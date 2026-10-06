@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """La voz del cangrejito.
 
 Dos motores, los dos locales y de la comunidad:
@@ -147,7 +150,8 @@ class Voz:
         args = [str(python), str(AQUI / 'voz_xtts.py'), ref, '--padre', str(os.getpid())]
         if self.cfg.get('xtts_modelo'):
             args += ['--modelo', str(self.cfg['xtts_modelo'])]
-        self._xtts_proc = subprocess.Popen(args, cwd=str(AQUI), creationflags=subprocess.CREATE_NO_WINDOW)
+        self._xtts_proc = subprocess.Popen(args, cwd=str(AQUI),
+                                           creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         log.info('arranca el servidor XTTS')
 
     def apagar_xtts(self):

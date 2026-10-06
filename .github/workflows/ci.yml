@@ -1,0 +1,113 @@
+# Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
+# En cada cambio: pruebas en Windows y en Linux.
+# En cada versión (etiqueta vX.Y.Z): arma el instalador de Windows y el paquete de Linux, prueba
+# instalarlos y los adjunta a la página de la versión.
+name: Pruebas y versiones
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pruebas:
+    name: Pruebas (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Librerías de sistema (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libportaudio2 libegl1 libxkbcommon0 libfontconfig1 libdbus-1-3
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest pruebas -v
+
+  armar:
+    name: Armar (${{ matrix.os }})
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: pruebas
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Librerías de sistema (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libportaudio2 libegl1 libxkbcommon0 libfontconfig1 libdbus-1-3 x11-utils
+      - run: pip install -r requirements.txt pyinstaller
+      - run: python -m PyInstaller cangrejito.spec --noconfirm
+
+      - name: Probar el programa armado
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          set -x
+          EXE=dist/Cangrejito/Cangrejito; [ "$RUNNER_OS" = Windows ] && EXE=dist/Cangrejito/Cangrejito.exe
+          export CANGREJITO_DATOS="$RUNNER_TEMP/datos" CANGREJITO_CLAUDE_DIR="$RUNNER_TEMP/claude"
+          mkdir -p "$CANGREJITO_DATOS" && echo '{"nombre": "Prueba"}' > "$CANGREJITO_DATOS/config.json"
+          "$EXE" --instalar-hooks --narracion
+          grep -c -- '--avisar' "$CANGREJITO_CLAUDE_DIR/settings.json"
+          "$EXE" --ya & PID=$!
+          for i in $(seq 1 60); do grep -q "voz de Daniela lista\|no pude cargar la voz" "$CANGREJITO_DATOS/registro.txt" 2>/dev/null && break; sleep 2; done
+          echo '{"hook_event_name":"SessionStart","source":"startup","session_id":"ci","cwd":"/ci"}' | "$EXE" --avisar
+          sleep 3
+          kill $PID || true
+          cat "$CANGREJITO_DATOS/registro.txt"
+          grep -q "arranca el cangrejito" "$CANGREJITO_DATOS/registro.txt"
+          grep -q "evento SessionStart" "$CANGREJITO_DATOS/registro.txt"
+          if grep -q "error sin atrapar" "$CANGREJITO_DATOS/registro.txt"; then exit 1; fi
+          "$EXE" --quitar-hooks
+          if grep -q -- '--avisar' "$CANGREJITO_CLAUDE_DIR/settings.json"; then exit 1; fi
+
+      - name: Instalador de Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
+          $iscc = (Get-Command iscc -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc instalador\cangrejito.iss
+          Copy-Item instalador\salida\CangrejitoSetup.exe .
+
+      - name: Paquete de Linux (y probar instalarlo)
+        if: runner.os == 'Linux'
+        run: |
+          set -e
+          P=paquete/Cangrejito-linux
+          mkdir -p "$P"
+          cp -r dist/Cangrejito "$P/Cangrejito"
+          cp instalador/linux/instalar.sh instalador/linux/desinstalar.sh cangrejito.png LICENSE README.md "$P/"
+          chmod +x "$P/instalar.sh" "$P/desinstalar.sh" "$P/Cangrejito/Cangrejito"
+          tar -C paquete -czf Cangrejito-linux-x64.tar.gz Cangrejito-linux
+          "$P/instalar.sh" --si
+          test -x ~/.local/share/cangrejito-programa/Cangrejito
+          test -f ~/.config/autostart/cangrejito.desktop
+          grep -c -- '--avisar' ~/.claude/settings.json
+          ~/.local/share/cangrejito-programa/desinstalar.sh
+          test ! -e ~/.local/share/cangrejito-programa
+
+      - name: Adjuntar a la versión
+        shell: bash
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Cangrejito ${GITHUB_REF_NAME#v}" --notes-file instalador/notas-de-version.md || true
+          ARCHIVO=CangrejitoSetup.exe; [ "$RUNNER_OS" = Linux ] && ARCHIVO=Cangrejito-linux-x64.tar.gz
+          gh release upload "$GITHUB_REF_NAME" "$ARCHIVO" --clobber

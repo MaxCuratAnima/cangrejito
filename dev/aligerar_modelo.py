@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Achica el modelo XTTS argentino para que cargue rápido.
 
 El model.pth publicado (5,3 GB) es un checkpoint de entrenamiento: además de los pesos trae

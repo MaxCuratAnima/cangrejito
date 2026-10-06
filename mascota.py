@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """La ventana del cangrejito: animación, física tipo Shimeji, paseos y mouse.
 
 Estados:
@@ -468,14 +471,15 @@ class Mascota(QWidget):
                             vaiven=True, escala=0.6)
 
     def _humo(self, cuantas: int):
-        """Nubes de humo de la rueda de atrás (queda una estela, porque salen para el lado contrario)."""
+        """Nubes de humo de la rueda de atrás. Suben y se abren un poco hacia atrás, sin irse lejos:
+        se dibujan adentro de la ventana del cangrejito y, si se alejan, se cortan en el borde."""
         E = self.E
         rueda = (S.OX + S.RUEDAS_X[0 if self.dir > 0 else 1]) * E
         for _ in range(cuantas):
-            self._particula(random.choice((S.HUMO, S.HUMO, S.HUMO_CLARO)), rueda + random.uniform(-8, 8),
-                            (S.OY + 28) * E + random.uniform(-4, 3), -self.dir * random.uniform(20, 130),
-                            random.uniform(-55, -10), -25, random.uniform(0.8, 1.5),
-                            escala=random.uniform(0.5, 1.2))
+            self._particula(random.choice((S.HUMO, S.HUMO, S.HUMO_CLARO)), rueda + random.uniform(-6, 6),
+                            (S.OY + 28) * E + random.uniform(-4, 3), -self.dir * random.uniform(4, 30),
+                            random.uniform(-70, -25), -30, random.uniform(0.6, 1.1),
+                            escala=random.uniform(0.5, 1.0))
 
     def _pose_bajarse(self, p: Pose, u: float, quiero: set) -> bool:
         """Tiene que laburar: salta del auto, aterriza, y el auto se va solo mientras lo saluda."""

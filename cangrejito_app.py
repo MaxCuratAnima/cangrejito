@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Cangrejito de Claude: mascota de escritorio que comenta lo que hace Claude Code.
 
 Arranca con Windows escondido; aparece cuando abrís la app de Claude.
@@ -5,6 +8,7 @@ Arranca con Windows escondido; aparece cuando abrís la app de Claude.
   --sin-voz   arranca silenciado
 """
 import logging
+import os
 import struct
 import sys
 from logging.handlers import RotatingFileHandler
@@ -15,7 +19,9 @@ sys.path.insert(0, str(AQUI))
 
 from PySide6.QtCore import QBuffer, QIODevice, QPoint, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QImage, QPainter, QPixmap
-from PySide6.QtWidgets import QApplication, QInputDialog, QMenu, QSystemTrayIcon
+from PySide6.QtWidgets import QApplication, QInputDialog, QMenu, QMessageBox, QSystemTrayIcon
+
+import version
 
 import eventos
 import rutas
@@ -70,6 +76,10 @@ def _preguntar_nombre(cfg):
 def main():
     _registro()
     args = set(sys.argv[1:])
+    if sys.platform.startswith('linux') and os.environ.get('WAYLAND_DISPLAY') and os.environ.get('DISPLAY') \
+            and not os.environ.get('QT_QPA_PLATFORM'):
+        # en Wayland una ventana no puede ubicarse sola ni quedar siempre encima: va por XWayland
+        os.environ['QT_QPA_PLATFORM'] = 'xcb'
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     cfg = Config()
@@ -112,6 +122,7 @@ def main():
         grupo_motor.addAction(a)
         sub_motor.addAction(a)
     a_probar = menu.addAction('Probar la voz')
+    a_acerca = menu.addAction('Acerca del Cangrejito')
     menu.addSeparator()
     a_dormir = menu.addAction('Dormir / despertar')
     a_monitor = menu.addAction('Llevar al otro monitor')
@@ -157,6 +168,14 @@ def main():
 
     a_silencio.triggered.connect(lambda _=False: alternar_silencio())
     a_probar.triggered.connect(lambda: nar.decir(f'¡Hola, {cfg["nombre"]}! Así sueno yo.', alta=True))
+    a_acerca.triggered.connect(lambda: QMessageBox.about(
+        None, 'Acerca del Cangrejito',
+        f'<b>{version.NOMBRE} {version.VERSION}</b><br>'
+        'Mascota de escritorio que narra lo que hace Claude Code.<br><br>'
+        f'Creado por <b>{version.AUTOR}</b>.<br>{version.COPYRIGHT}. Licencia {version.LICENCIA}.<br>'
+        f'<a href="{version.REPO}">{version.REPO}</a><br><br>'
+        'Voz «Daniela» (Piper, es_AR): CC BY-SA 4.0, dataset OpenSLR 61.<br>'
+        'Proyecto de fan, no oficial: no está afiliado a Anthropic.'))
     a_dormir.triggered.connect(dormir_despertar)
     a_monitor.triggered.connect(m.llevar_a_otro_monitor)
     a_siempre.triggered.connect(siempre)
@@ -164,7 +183,8 @@ def main():
         # «Salir» vale hasta que cierres esta app de Claude: el lanzador no lo vuelve a abrir antes
         try:
             from vigilante import pids_app_claude
-            (rutas.DATOS / 'apagado.txt').write_text(' '.join(str(p) for p in pids_app_claude()))
+            # los procesos de Claude de ahora; «0» si no hay (siempre visible: vale hasta la próxima sesión)
+            (rutas.DATOS / 'apagado.txt').write_text(' '.join(str(p) for p in pids_app_claude()) or '0')
         except Exception:
             log.exception('no pude anotar el apagado')
         app.quit()

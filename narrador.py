@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Traduce los eventos de Claude Code en animaciones y frases, y reparte la voz.
 
 Ritmo: el globo y la voz van juntos. Una frase normal espera a que termine la

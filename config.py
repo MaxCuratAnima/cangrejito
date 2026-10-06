@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Ajustes del cangrejito en config.json (en %APPDATA%\\Cangrejito). Se puede editar a mano."""
 from __future__ import annotations
 

@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Servidor de voz XTTS-v2 en español argentino (modelo de la UNRN, afinado con grabaciones argentinas).
 
 Es opcional: corre aparte, con su propio Python (un entorno con coqui-tts y PyTorch, el de
@@ -160,12 +163,20 @@ class Manejador(BaseHTTPRequestHandler):
 
 def vigilar_padre(pid: int):
     """Si el cangrejito se cierra, este servidor se va con él."""
-    k = ctypes.windll.kernel32
-    h = k.OpenProcess(0x00100000, False, pid)        # SYNCHRONIZE
-    if h:
-        k.WaitForSingleObject(h, 0xFFFFFFFF)
-    log.info('el cangrejito se cerró: salgo')
     import os
+    if sys.platform == 'win32':
+        k = ctypes.windll.kernel32
+        h = k.OpenProcess(0x00100000, False, pid)        # SYNCHRONIZE
+        if h:
+            k.WaitForSingleObject(h, 0xFFFFFFFF)
+    else:
+        while True:                                       # en Linux: se fija cada 2 s si sigue vivo
+            try:
+                os.kill(pid, 0)
+            except OSError:
+                break
+            time.sleep(2)
+    log.info('el cangrejito se cerró: salgo')
     os._exit(0)
 
 

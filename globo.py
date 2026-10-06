@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Globo de diálogo pixelado que sigue al cangrejito (se ve aunque la voz esté silenciada)."""
 from __future__ import annotations
 
@@ -14,6 +17,7 @@ SUB = QColor('#B4573A')
 ANCHO_MAX = 290
 MARGEN = 10
 COLA = 8          # alto de la colita
+FUENTES = ['Segoe UI', 'Noto Sans', 'DejaVu Sans', 'Liberation Sans']   # la primera que haya (Windows, Linux)
 
 
 class Globo(QWidget):
@@ -23,9 +27,13 @@ class Globo(QWidget):
                          | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        self.fuente = QFont('Segoe UI', 10)
+        self.fuente = QFont()
+        self.fuente.setFamilies(FUENTES)
+        self.fuente.setPointSize(10)
         self.fuente.setWeight(QFont.Weight.DemiBold)
-        self.fuente_sub = QFont('Segoe UI', 8)
+        self.fuente_sub = QFont()
+        self.fuente_sub.setFamilies(FUENTES)
+        self.fuente_sub.setPointSize(8)
         self.fuente_sub.setWeight(QFont.Weight.Bold)
         self.texto = ''
         self.sub = ''

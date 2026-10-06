@@ -1,3 +1,6 @@
+# Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
+# Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
+# SPDX-License-Identifier: MIT
 """Dibujo del cangrejito: pixel-art propio al estilo de Clawd, hecho en código.
 
 Todo se pinta en una grilla chica (1 unidad = 1 píxel de un QImage de W×H) y la
@@ -14,7 +17,7 @@ import math
 from dataclasses import dataclass, field
 
 import numpy as np
-from PySide6.QtCore import QRect
+from PySide6.QtCore import QRect, Qt
 from PySide6.QtGui import QColor, QImage, QPainter
 
 W, H = 40, 45          # lienzo, en unidades
@@ -596,7 +599,7 @@ def _auto(fase: int, espejo: bool) -> QImage:
             q.fillRect(cx + rx, ry, 1, 1, PALETA['g'])
         q.end()
         if espejo:
-            img = img.mirrored(True, False)
+            img = img.flipped(Qt.Orientation.Horizontal)
         _cache[clave] = img
     return img
 
