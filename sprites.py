@@ -53,6 +53,18 @@ PALETA = {
     'x': _c('#E0364B'),   # rojo de la X
     'C': _c('#74ACDF'),   # celeste de la bandera
     'M': _c('#C98B4F'),   # madera clara (guitarra)
+    'a': _c('#FF9F1C'),   # naranja (bandera del orgullo)
+    'v': _c('#9B5DE5'),   # violeta
+    'P': _c('#8E1B2E'),   # bordó (poncho salteño)
+    'Y': _c('#E8B33A'),   # dorado (cadena, sol)
+    'f': _c('#FF8FB1'),   # rosa (flor)
+    'e': _c('#2E8B57'),   # verde oscuro (ruda)
+    's': _c('#D8D8E0'),   # plateado (plato, micrófono)
+    'L': _c('#5B3A29'),   # café
+    't': _c('#C77B30'),   # té
+    'q': _c('#F2D68A'),   # ñoquis
+    'Z': _c('#C8352E'),   # salsa de tomate
+    'u': _c('#1F3A93'),   # azul oscuro (gorrita, moño)
 }
 CONTORNO = _c('#1E1310', 95)
 
@@ -167,6 +179,54 @@ GUITARRA = [   # criolla: clavijas, mástil y caja con la boca (por debajo de la
     '..........mMMMMm',
     '...........mmmm.',
 ]
+ELECTRICA = [  # guitarra eléctrica roja (rock nacional)
+    '..........xx....',
+    '...........xxx..',
+    'GGMMMMMMMMxxxxx.',
+    'GGmmmmmmmmxxwwx.',
+    '..........xxxxx.',
+    '.........xx.....',
+]
+TECLADO = [    # teclado colgado, como el de la cumbia (keytar)
+    '..........xxxx',
+    'GGGGGGGGGGGG..',
+    'GwkwwkwkwwkG..',
+    'GGGGGGGGGGGG..',
+]
+MICROFONO = ['ss', 'ss', '.K', '.K', '.K']
+TAZA = {   # café y té (para quien no toma mate), y el vasito de caña con ruda de la Pachamama
+    'cafe': ['wLLLw.', 'wwwwwg', 'wwwwwg', '.www..'],
+    'te':   ['wtttw.', 'wwwwwg', 'wywwwg', '.www..'],
+    'ruda': ['.e.e.', 'seees', 'swwws', 'sssss'],
+}
+NOQUIS = [     # plato de ñoquis con tuco, y el billete asomando abajo
+    '...qZqZq...',
+    '..qqZqqZqq.',
+    'sssssssssss',
+    'nnsssssssnn',
+]
+TENEDOR = ['s.s', 'sss', '.s.', '.s.']
+ESCARAPELA = ['.CCC.', 'CwwwC', 'CwCwC', 'CwwwC', '.CCC.']
+FLOR = ['.f.', 'fyf', '.f.']
+# banderas de 8×6 (la de la hinchada y la del mástil); se elige en la configuración
+BANDERAS = {
+    'argentina': ['CCCCCCCC', 'CCCCCCCC', 'wwwyywww', 'wwwyywww', 'CCCCCCCC', 'CCCCCCCC'],
+    'uruguay':   ['yywwwwww', 'yyBBBBBB', 'wwwwwwww', 'BBBBBBBB', 'wwwwwwww', 'BBBBBBBB'],
+    'chile':     ['BBBwwwww', 'BwBwwwww', 'BBBwwwww', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx'],
+    'paraguay':  ['xxxxxxxx', 'xxxxxxxx', 'wwwyywww', 'wwwwwwww', 'BBBBBBBB', 'BBBBBBBB'],
+    'bolivia':   ['xxxxxxxx', 'xxxxxxxx', 'yyyyyyyy', 'yyyyyyyy', 'nnnnnnnn', 'nnnnnnnn'],
+    'peru':      ['xxxwwxxx'] * 6,
+    'colombia':  ['yyyyyyyy', 'yyyyyyyy', 'yyyyyyyy', 'BBBBBBBB', 'xxxxxxxx', 'xxxxxxxx'],
+    'venezuela': ['yyyyyyyy', 'yyyyyyyy', 'BwBBBBwB', 'BBwwwwBB', 'xxxxxxxx', 'xxxxxxxx'],
+    'mexico':    ['nnwwwwxx', 'nnwwwwxx', 'nnwmmwxx', 'nnwmmwxx', 'nnwwwwxx', 'nnwwwwxx'],
+    'espana':    ['xxxxxxxx', 'yyyyyyyy', 'yyyyyyyy', 'yyyyyyyy', 'yyyyyyyy', 'xxxxxxxx'],
+    'brasil':    ['nnnyynnn', 'nnyyyynn', 'nyyBByyn', 'nyyBByyn', 'nnyyyynn', 'nnnyynnn'],
+    'orgullo':   ['xxxxxxxx', 'aaaaaaaa', 'yyyyyyyy', 'nnnnnnnn', 'BBBBBBBB', 'vvvvvvvv'],
+}
+NOMBRES_BANDERAS = [('argentina', 'Argentina'), ('uruguay', 'Uruguay'), ('chile', 'Chile'),
+                    ('paraguay', 'Paraguay'), ('bolivia', 'Bolivia'), ('peru', 'Perú'), ('colombia', 'Colombia'),
+                    ('venezuela', 'Venezuela'), ('mexico', 'México'), ('espana', 'España'), ('brasil', 'Brasil'),
+                    ('orgullo', 'Orgullo (arcoíris)')]
 # partículas (se dibujan fuera de la grilla, con posición libre)
 NOTA = ['..yy', '..y.', '..y.', 'yyy.', 'yy..']
 Z_GRANDE = ['yyyy', '..y.', '.y..', 'yyyy']
@@ -221,6 +281,9 @@ class Pose:
     t: float = 0.0             # reloj, para animar accesorios
     auto_x: int = 0            # el auto corrido (cuando se va solo)
     auto_atras: bool = False   # el auto detrás del cangrejo (ya se bajó)
+    bebida: str = 'mate'       # mate, cafe, te o ruda (qué toma mientras labura)
+    bandera: str = 'argentina'  # la de la hinchada
+    fuelle: int = 4            # cuánto está abierto el bandoneón
 
 
 def _brazo(nombre: str, f: int, lado: int):
@@ -334,15 +397,20 @@ def dibujar(pose: Pose) -> QImage:
     r(bx + 1, by, bw - 2, 1, 'h')
     r(bx, by + bh - 1, bw, 1, 'O')
 
-    # --- pañuelo de gaucho: abajo del cuerpo, con el nudo colgando entre las patas
-    a = acc.get('gaucho', 0)
+    # --- pañuelo de gaucho (rojo) o de tanguero (blanco): abajo del cuerpo, con el nudo entre las patas
+    medio = bx + bw // 2
+    for nombre, col in (('gaucho', 'x'), ('panuelo_blanco', 'w')):
+        a = acc.get(nombre, 0)
+        if a > 0.01:
+            p.setOpacity(a)
+            r(bx + 2, by + bh - 1, bw - 4, 1, col)
+            r(medio - 1, by + bh, 2, 1, col)
+            r(medio - 1, by + bh + 1, 1, 1, col)
+            p.setOpacity(1.0)
+    _ropa_cuerpo(p, acc, bx, by, bw, bh, pose.t)
+    a = acc.get('escarapela', 0)
     if a > 0.01:
-        p.setOpacity(a)
-        medio = bx + bw // 2
-        r(bx + 2, by + bh - 1, bw - 4, 1, 'x')
-        r(medio - 1, by + bh, 2, 1, 'x')
-        r(medio - 1, by + bh + 1, 1, 1, 'x')
-        p.setOpacity(1.0)
+        spr(ESCARAPELA, 9, 21 + dt, a)
 
     # --- mini cangrejo ayudante arriba de la cabeza
     a = acc.get('ayudante', 0)
@@ -441,25 +509,38 @@ def dibujar(pose: Pose) -> QImage:
     a = acc.get('pochoclos', 0)
     if a > 0.01:
         spr(POCHOCLOS, 8, 22 + dt, a)
+    vaso = MATE if pose.bebida == 'mate' else TAZA.get(pose.bebida, TAZA['cafe'])
     a = acc.get('mate', 0)
     if a > 0.01:
-        spr(MATE, 26, 22 + dt, a)          # en la pinza, al costado (el sorbo es «mate_boca», más abajo)
+        spr(vaso, 26, 22 + dt, a)          # en la pinza, al costado (el sorbo es «mate_boca», más abajo)
     a = acc.get('bandera', 0)
     if a > 0.01:
-        _bandera(p, 25, 4 + dt, pose.t, a)
+        _bandera(p, 25, 4 + dt, pose.t, a, pose.bandera)
     a = acc.get('guitarra', 0)
     if a > 0.01:
         spr(GUITARRA, 8, 23 + dt, a)
+    a = acc.get('electrica', 0)
+    if a > 0.01:
+        spr(ELECTRICA, 8, 23 + dt, a)
+    a = acc.get('teclado_musical', 0)
+    if a > 0.01:
+        spr(TECLADO, 9, 24 + dt, a)
+    a = acc.get('bandoneon', 0)
+    if a > 0.01:
+        _bandoneon(p, 17, 22 + dt, pose.fuelle, a)
+    a = acc.get('noquis', 0)
+    if a > 0.01:
+        spr(NOQUIS, 12, 25, a)              # en el piso, adelante
     # mate de trabajo: el termo y el mate en el piso a la derecha de la netbook, o en la mano
     a = acc.get('termo', 0)
     if a > 0.01:
         spr(TERMO, 33, 20, a)
     a = acc.get('mate_piso', 0)
     if a > 0.01:
-        spr(MATE, 27, 24, a)
+        spr(vaso, 27, 29 - len(vaso), a)
     a = acc.get('mate_mano', 0)
     if a > 0.01:
-        spr(MATE, 27, 21 + dt, a)
+        spr(vaso, 27, 21 + dt, a)
 
     # --- brazos
     for lado, nombre in ((-1, pose.brazos[0]), (1, pose.brazos[1])):
@@ -495,14 +576,8 @@ def dibujar(pose: Pose) -> QImage:
             r(x + (0 if x < bx else 1), by + 2, 1, 2, 'r')
         p.setOpacity(1.0)
 
-    # --- sombrero de gaucho (ala ancha, copa y cinta roja)
-    a = acc.get('gaucho', 0)
-    if a > 0.01:
-        p.setOpacity(a)
-        r(bx + 4, by - 4, bw - 8, 2, 'K')
-        r(bx + 4, by - 2, bw - 8, 1, 'x')
-        r(bx - 1, by - 1, bw + 2, 1, 'K')
-        p.setOpacity(1.0)
+    # --- sombreros (uno solo a la vez: el más visible)
+    _sombrero(p, acc, bx, by, bw)
 
     # --- netbook delante (tapa las pinzas que teclean detrás de la pantalla)
     a = acc.get('netbook', 0)
@@ -512,7 +587,13 @@ def dibujar(pose: Pose) -> QImage:
     # --- el sorbo de mate: la bombilla a la boca, delante de todo (también de la netbook)
     a = acc.get('mate_boca', 0)
     if a > 0.01:
-        spr(MATE, 15, 23 + dt, a)
+        spr(vaso, 15, 23 + dt, a)
+    a = acc.get('tenedor', 0)
+    if a > 0.01:
+        spr(TENEDOR, 16, 22 + dt, a)
+    a = acc.get('microfono', 0)
+    if a > 0.01:
+        spr(MICROFONO, 20, 20 + dt, a)
 
     # --- accesorios de la cabeza
     a = acc.get('ondas', 0)
@@ -620,17 +701,127 @@ def _joystick(p: QPainter, x0: int, y0: int, t: float, a: float):
     p.setOpacity(1.0)
 
 
-def _bandera(p: QPainter, x0: int, y0: int, t: float, a: float):
-    """Bandera argentina flameando en un palito (el palito pasa por la pinza)."""
+def _bandera(p: QPainter, x0: int, y0: int, t: float, a: float, pais: str = 'argentina'):
+    """Bandera flameando en un palito (el palito pasa por la pinza)."""
+    filas = BANDERAS.get(pais, BANDERAS['argentina'])
     p.setOpacity(a)
-    p.fillRect(x0, y0, 1, 9, PALETA['m'])
+    p.fillRect(x0, y0 - 1, 1, 10, PALETA['m'])
     for i in range(8):
         dy = round(math.sin(t * 9 - i * 0.9)) if i > 0 else 0
-        x, y = x0 + 1 + i, y0 + dy
-        p.fillRect(x, y, 1, 2, PALETA['C'])
-        p.fillRect(x, y + 2, 1, 1, PALETA['y' if i in (3, 4) else 'w'])
-        p.fillRect(x, y + 3, 1, 2, PALETA['C'])
+        for j, fila in enumerate(filas):
+            p.fillRect(x0 + 1 + i, y0 + dy + j - 1, 1, 1, PALETA[fila[i]])
     p.setOpacity(1.0)
+
+
+def _bandoneon(p: QPainter, cx: int, y0: int, fuelle: int, a: float):
+    """Bandoneón: las dos tapas negras con botones y el fuelle en zigzag, que se abre y se cierra."""
+    n = max(2, min(9, fuelle))
+    x0 = cx - (6 + n) // 2
+    p.setOpacity(a)
+    for x in (x0, x0 + 3 + n):
+        p.fillRect(x, y0, 3, 6, PALETA['K'])
+        for j in (1, 3):
+            p.fillRect(x + 1, y0 + j, 1, 1, PALETA['w'])
+    for i in range(n):
+        for j in range(6):
+            p.fillRect(x0 + 3 + i, y0 + j, 1, 1, PALETA['G' if (i + j) % 2 else 'g'])
+    p.setOpacity(1.0)
+
+
+SOMBREROS = ('gaucho', 'galera', 'bicornio', 'funyi', 'gorrita', 'gorra', 'gorro_navidad')
+
+
+def _sombrero(p: QPainter, acc: dict, bx: int, by: int, bw: int):
+    """Un solo sombrero: el más visible (si se cruzan dos, el que se va se apaga). Sin sombrero, la flor."""
+    puestos = [(acc.get(k, 0), k) for k in SOMBREROS if acc.get(k, 0) > 0.01]
+    if not puestos:
+        flor = acc.get('flor', 0)
+        if flor > 0.01:
+            p.setOpacity(flor)
+            p.drawImage(bx + bw - 5, by - 2, sprite(FLOR))
+            p.setOpacity(1.0)
+        return
+    a, k = max(puestos)
+    p.setOpacity(a)
+
+    def r(x, y, w, h, col):
+        p.fillRect(x, y, w, h, PALETA[col])
+    medio = bx + bw // 2
+    if k == 'gaucho':                       # ala ancha, copa y cinta roja
+        r(bx + 4, by - 4, bw - 8, 2, 'K')
+        r(bx + 4, by - 2, bw - 8, 1, 'x')
+        r(bx - 1, by - 1, bw + 2, 1, 'K')
+    elif k == 'galera':                     # galera colonial, alta, con cinta celeste
+        r(bx + 4, by - 8, bw - 8, 7, 'K')
+        r(bx + 4, by - 3, bw - 8, 1, 'C')
+        r(bx + 1, by - 1, bw - 2, 1, 'K')
+    elif k == 'bicornio':                   # el de San Martín, de costado, con escarapela y penacho
+        r(bx, by - 1, bw, 1, 'K')
+        r(bx + 2, by - 3, bw - 4, 2, 'K')
+        r(bx + 5, by - 5, bw - 10, 2, 'K')
+        r(medio - 1, by - 4, 2, 2, 'C')
+        r(medio - 1, by - 7, 1, 2, 'x')
+    elif k == 'funyi':                      # sombrero de tanguero
+        r(bx + 4, by - 4, bw - 8, 3, 'G')
+        r(medio - 1, by - 4, 2, 1, 'K')     # la hendidura de la copa
+        r(bx + 4, by - 2, bw - 8, 1, 'K')
+        r(bx + 1, by - 1, bw - 2, 1, 'G')
+    elif k == 'gorrita':                    # gorrita de cumbiero, con la visera de costado
+        r(bx + 4, by - 3, bw - 8, 3, 'u')
+        r(medio - 1, by - 4, 2, 1, 'u')
+        r(bx + bw - 4, by - 1, 6, 1, 'u')
+    elif k == 'gorra':                      # gorra de trapero, visera derecha y logo dorado
+        r(bx + 4, by - 3, bw - 8, 3, 'K')
+        r(bx + 3, by - 1, bw - 6, 1, 'K')
+        r(medio - 1, by - 2, 2, 1, 'Y')
+    elif k == 'gorro_navidad':              # gorro de Papá Noel con pompón
+        r(bx + 2, by - 1, bw - 4, 1, 'w')
+        r(bx + 4, by - 3, bw - 8, 2, 'x')
+        r(bx + 6, by - 5, 5, 2, 'x')
+        r(bx + 10, by - 6, 3, 1, 'x')
+        r(bx + 13, by - 7, 2, 2, 'w')
+    p.setOpacity(1.0)
+
+
+def _ropa_cuerpo(p: QPainter, acc: dict, bx: int, by: int, bw: int, bh: int, t: float):
+    """Lo que se pone en el cuerpo (de la boca para abajo, así no tapa la cara)."""
+    def r(x, y, w, h, col):
+        p.fillRect(x, y, w, h, PALETA[col])
+    medio = bx + bw // 2
+    abajo = by + 6
+    alto = by + bh - abajo
+    for k in ('poncho', 'guardapolvo', 'campera', 'camiseta', 'lentejuelas', 'cadena'):
+        a = acc.get(k, 0)
+        if a <= 0.01:
+            continue
+        p.setOpacity(a)
+        if k == 'poncho':                   # poncho salteño: bordó con guarda negra
+            r(bx, abajo, bw, alto, 'P')
+            r(bx, abajo, bw, 1, 'K')
+            r(bx, by + bh - 2, bw, 1, 'K')
+        elif k == 'guardapolvo':            # guardapolvo blanco con moño azul
+            r(bx, abajo, bw, alto, 'w')
+            r(medio - 2, abajo, 4, 1, 'u')
+            r(medio, abajo + 2, 1, 1, 'g')
+        elif k == 'campera':                # campera de cuero negra, abierta adelante, con solapas
+            r(bx, abajo + 1, 5, alto - 1, 'K')
+            r(bx + bw - 5, abajo + 1, 5, alto - 1, 'K')
+            r(bx + 4, abajo + 1, 1, 2, 'G')
+            r(bx + bw - 5, abajo + 1, 1, 2, 'G')
+            r(bx + 1, abajo + 3, 1, 1, 'g')     # el cierre de un bolsillo
+        elif k == 'camiseta':               # la albiceleste, a rayas
+            for x in range(bx, bx + bw):
+                r(x, abajo, 1, alto, 'C' if (x - bx) // 2 % 2 == 0 else 'w')
+        elif k == 'lentejuelas':            # camisa brillante de cuartetero: brillitos que titilan
+            for i, (x, y) in enumerate(((1, 7), (4, 8), (7, 7), (10, 8), (13, 7), (2, 9), (6, 9),
+                                        (9, 9), (12, 9), (14, 9))):
+                r(bx + x, by + y, 1, 1, 'YwfC'[(i + int(t * 6)) % 4])
+        elif k == 'cadena':                 # cadena dorada en V con dije
+            for i in range(4):
+                r(bx + 3 + i, abajo - 1 + i // 2, 1, 1, 'Y')
+                r(bx + bw - 4 - i, abajo - 1 + i // 2, 1, 1, 'Y')
+            r(medio - 1, abajo + 1, 2, 2, 'Y')
+        p.setOpacity(1.0)
 
 
 def _teclado(p: QPainter, pose: Pose, a: float):
@@ -676,6 +867,7 @@ _CONTORNO_BGRA = np.array([CONTORNO.blue(), CONTORNO.green(), CONTORNO.red(), 25
 
 def _con_contorno(img: QImage) -> QImage:
     """Suma un borde oscuro semitransparente de 1 unidad para que se vea en cualquier fondo."""
+    W, H = img.width(), img.height()
     bpl = img.bytesPerLine()
     arr = np.frombuffer(img.constBits(), np.uint8).reshape(H, bpl // 4, 4)[:, :W].copy()
     lleno = arr[..., 3] > 0
@@ -701,3 +893,27 @@ def fila_superior(img: QImage) -> int:
 def recorte_cangrejo() -> QRect:
     """Zona del lienzo donde está el cangrejo en reposo (para el ícono)."""
     return QRect(OX + 2, OY + 14, 31, 16)
+
+
+# ---------------------------------------------------------------- el mástil del Día de la Bandera
+MW, MH = 16, 44          # lienzo del mástil (un poco más alto que el cangrejito)
+
+
+def dibujar_mastil(t: float, izada: float = 1.0, pais: str = 'argentina') -> QImage:
+    """Mástil con la bandera flameando. «izada» va de 0 (abajo de todo) a 1 (arriba)."""
+    img = QImage(MW, MH, QImage.Format.Format_ARGB32_Premultiplied)
+    img.fill(0)
+    p = QPainter(img)
+    filas = BANDERAS.get(pais, BANDERAS['argentina'])
+    p.fillRect(1, 0, 3, 2, PALETA['Y'])                 # la punta dorada
+    p.fillRect(2, 2, 1, MH - 6, PALETA['g'])            # el palo
+    p.fillRect(0, MH - 4, 6, 4, PALETA['m'])            # la base
+    p.fillRect(1, MH - 4, 4, 1, PALETA['M'])
+    arriba = 3 + round((1 - izada) * (MH - 18))
+    for i in range(12):
+        # flamea más lejos del palo; mientras sube va quieta
+        dy = round(math.sin(t * 7 - i * 0.7) * min(1.0, i / 3)) if izada > 0.95 else 0
+        for j in range(8):
+            p.fillRect(3 + i, arriba + j + dy, 1, 1, PALETA[filas[j * 6 // 8][i * 8 // 12]])
+    p.end()
+    return _con_contorno(img)

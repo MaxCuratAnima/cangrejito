@@ -56,13 +56,16 @@ clic derecho sobre el cangrejito.
 
 Mientras Claude Code trabaja, el cangrejito te dice qué archivo lee o edita, qué comando corre y para qué,
 qué encontró y qué va a probar. Cuando termina, te hace un resumen. Si Claude necesita un permiso o te
-hace una pregunta, te llama. Habla en castellano rioplatense, con una voz natural que se genera en tu PC.
+hace una pregunta, te llama. Habla en castellano rioplatense, con una voz natural que se genera en tu PC,
+con pausas para respirar y con ánimo: contento cuando algo sale, enojado cuando no anda, cansado cuando el
+proyecto viene largo. Cuando festeja, grita «¡Golazo!» y se escucha el confeti.
 
 <p align="center"><img src="docs/trabajando.gif" alt="El cangrejito narrando mientras Claude trabaja" width="420"></p>
 
 ### Se toma unos mates mientras labura
 
-Cada tanto agarra el termo, se ceba un mate y lo toma mientras teclea con la otra pinza.
+Cada tanto agarra el termo, se ceba un mate y lo toma mientras teclea con la otra pinza. ¿No tomás mate?
+En la configuración elegís café, té o nada.
 
 <p align="center"><img src="docs/mate.gif" alt="El cangrejito tomando mate mientras trabaja" width="300"></p>
 
@@ -80,6 +83,38 @@ Cada tanto agarra el termo, se ceba un mate y lo toma mientras teclea con la otr
 </table>
 
 Además camina, se sienta, juega con el celular, se duerme cuando no estás y te saluda cuando volvés.
+
+### Se viste según la música y las fechas argentinas
+
+Es un cangrejito hecho por argentinos. Reconoce a los íconos de cada género y se pone su ropa:
+
+| Género | Ropa e instrumento | Algunos artistas que reconoce |
+|---|---|---|
+| Folklore | Sombrero y pañuelo de gaucho, guitarra criolla | Chaqueño Palavecino, Mercedes Sosa, Soledad, Los Nocheros, Abel Pintos |
+| Tango | Funyi, pañuelo blanco y bandoneón | Carlos Gardel, Astor Piazzolla, Julio Sosa, Goyeneche, Bajofondo |
+| Cuarteto | Camisa con brillos, y a bailar | La Mona Jiménez, Rodrigo, Ulises Bueno, La K'onga, Q' Lokura |
+| Cumbia | Gorrita, camiseta albiceleste y teclado | Damas Gratis, Los Palmeras, Gilda, Ráfaga, L-Gante |
+| Rock nacional | Campera de cuero, lentes y eléctrica | Soda Stereo, Charly García, Spinetta, Los Redondos, La Renga |
+| Trap | Gorra, cadena, lentes y micrófono | Duki, Bizarrap, Nicki Nicole, Trueno, María Becerra |
+| Phonk y funk | El Camaro blanco | Kordhell, DVRST, Interworld (y tu propia playlist) |
+
+En la configuración podés apagar géneros y sumar tus artistas a cada uno.
+
+En las **fechas patrias** lleva la escarapela y su ropa (galera el 25 de Mayo y el 9 de Julio, bicornio
+el 17 de Agosto, poncho salteño por Güemes) y cada tanto cuenta una curiosidad del día. **El 20 de Junio
+planta un mástil, iza la bandera y la saluda**; el mástil lo podés agarrar con el mouse y llevarlo a otro
+lado, y él lo va a buscar. También festeja las fechas culturales: **ñoquis el 29**, el Día del Amigo, del
+Mate, de la Tradición, del Tango, la Pachamama, Navidad y más. Los días de memoria (24 de marzo y 2 de
+abril) no festeja ni hace chistes.
+
+<p align="center"><img src="docs/outfits.png" alt="La ropa del cangrejito según la música y las fechas" width="90%"></p>
+
+### Se adapta a vos
+
+En la primera vez te pregunta cómo llamarte, y desde el clic derecho cambiás todo: si te trata de
+«compañero», «compañera» o sin género, qué toma, tu bandera para alentarte (Argentina, Uruguay, Chile,
+México, España y más), cuánto habla, si dice malas palabras, si te recuerda hacer pausas activas, qué
+música lo hace bailar y cuánto respira al hablar.
 
 ### No molesta
 
@@ -162,6 +197,8 @@ los publica.
 **Herramientas en `dev/`:**
 - `galeria.py`: todas las poses en una hoja.
 - `gifs.py`: graba las animaciones de este README.
+- `outfits.py`: arma la imagen de la ropa por género y por fecha.
+- `muestras_voz.py`: graba muestras de la voz con cada ánimo y el confeti, para escucharlas.
 - `imagenes.py`: el banner, el ícono y las imágenes del instalador.
 - `probar.py`: manda eventos falsos, como si fueran de Claude.
 

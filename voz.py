@@ -39,13 +39,40 @@ XTTS_PUERTO = 47834
 DANIELA_URL = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/'
 DANIELA_SHA256 = '7ceb1fc0dab349418c5b54a639ae9ee595212d7c9ea422220d8419163d5cc985'
 
-# Palabras que se leen mal (solo para la voz; el globo muestra el texto original).
+# Palabras que se leen mal (solo para la voz; el globo muestra el texto original). Se revisaron pasando
+# cada una por el fonetizador de la voz (espeak es-419): las que salían deletreadas, en inglés mal leído
+# o salteadas están acá. Las siglas en mayúsculas (MCP, LLM, WSL…) espeak ya las deletrea bien.
+EMOJIS = re.compile('[\U0001F000-\U0001FAFF☀-➿⬀-⯿️‍]')
 DICCION = [
+    # símbolos y abreviaturas (antes que nada, porque cambian la puntuación)
+    (r'\b[vV](\d+(?:\.\d+)+)\b', r'versión \1'), (r'(\d+)\s*/\s*(\d+)', r'\1 de \2'),
+    (r'(\d)\s*%', r'\1 por ciento'), (r'(\d)\s*ms\b', r'\1 milisegundos'), (r'(\d)\s*s\b', r'\1 segundos'),
+    (r'(\d)\s*min\b', r'\1 minutos'), (r'(\d)\s*h\b', r'\1 horas'), (r'(\d)\s*°C', r'\1 grados'),
+    (r'\bx(\d)\b', r'por \1'), (r'#(\d)', r'número \1'), (r'\bp\.\s?ej\.', 'por ejemplo'),
+    (r'\bvs\.?(?=\s)', 'contra'), (r'\baprox\.', 'aproximadamente'), (r'\s&\s', ' y '),
+    (r'\s*(→|->|=>)\s*', ', a '), (r'\s*(—|–)\s*', ', '), (r'[~*#|]', ' '), (r'\(([^)]*)\)', r', \1,'),
+    (r'\b[MH]m+h?\b', 'Emm'),                      # «Mmm» y «Hmm»: si no, los deletrea
+    (r'\bUps\b', 'Úps'), (r'\b[Gg]oogle(o|ar|ás|a)\b', r'gugle\1'),   # si no, «aps» y «gooo»
+    # nombres y palabras en inglés que lee mal
     (r'\bClaude Code\b', 'Clod Coud'), (r'\bClaude\b', 'Clod'), (r'\bClawd\b', 'Clod'),
-    (r'\bUnity\b', 'Iúniti'), (r'\bVRChat\b', 'V R chat'),
+    (r'\bUnity\b', 'Iúniti'), (r'\bVRChat\b', 'V R chat'), (r'\bSteamVR\b', 'Estim V R'), (r'\bSteam\b', 'Estim'),
+    (r'\bSpotify\b', 'Espótifai'), (r'\bHalloween\b', 'Jálouin'), (r'\bYouTube\b', 'Iutiub'), (r'\bOneDrive\b', 'Uan dráiv'),
+    (r'\bHugging Face\b', 'Jáguin feis'), (r'\bPiper\b', 'Páiper'), (r'\bWhisper\b', 'Uísper'),
+    (r'\bPyInstaller\b', 'Pai instóler'), (r'\bPySide(\d?)\b', r'Pai said \1'), (r'\bpytest\b', 'pai test'),
+    (r'\bBluetooth\b', 'Blutuz'), (r'\bNVIDIA\b', 'Envidia'), (r'\bRyzen\b', 'Ráisen'), (r'\bREADME\b', 'Ridmi'),
+    (r'\bSonnet\b', 'Sónet'), (r'\bBoulogne-sur-Mer\b', 'Bulóñ sur Mer'), (r'\bUI\b', 'U I'), (r'\bIA\b', 'I A'),
     (r'\bPhysBones?\b', 'fis bouns'), (r'\bprefab(s?)\b', r'prífab\1'), (r'\bshader(s?)\b', r'shéider\1'),
-    (r'\bcommit(s?)\b', r'cómit\1'), (r'\bhook(s?)\b', r'juk\1'),
+    (r'\bcommit(s?)\b', r'cómit\1'), (r'\bhook(s?)\b', r'juk\1'), (r'\bbug(s?)\b', r'bag\1'),
     (r'\bscript(s?)\b', r'escript\1'), (r'\bsoftware\b', 'sóftuer'), (r'\bhardware\b', 'járduer'),
+    (r'\bplugin(s?)\b', r'plaguin\1'), (r'\bupdate(s?)\b', r'apdéit\1'), (r'\bfeedback\b', 'fidbak'),
+    (r'\bonline\b', 'onláin'), (r'\boffline\b', 'ofláin'), (r'\bemail(s?)\b', r'imeil\1'), (r'\bmail\b', 'meil'),
+    (r'\bstream(s?)\b', r'estrim\1'), (r'\bstreaming\b', 'estríming'), (r'\bplaylist(s?)\b', r'pléilist\1'),
+    (r'\bsprite(s?)\b', r'espráit\1'), (r'\bframe(s?)\b', r'fréim\1'), (r'\bframework(s?)\b', r'fréimuork\1'),
+    (r'\bsetup\b', 'sétap'), (r'\bInno Setup\b', 'Ino sétap'), (r'\bdeploy\b', 'diplói'), (r'\brelease(s?)\b', r'rilís\1'),
+    (r'\bpull request(s?)\b', r'pul ricuést\1'), (r'\bupload\b', 'áploud'), (r'\bdownload\b', 'dáunloud'),
+    (r'\bdefault\b', 'difólt'), (r'\bdebug\b', 'dibág'), (r'\btimeout\b', 'táimaut'), (r'\bwarning(s?)\b', r'uórning\1'),
+    (r'\bslider\b', 'esláider'), (r'\bissue(s?)\b', r'íshu\1'), (r'\bmerge\b', 'merch'), (r'\bvenv\b', 've env'),
+    (r'\bpath\b', 'paz'), (r'\bStore\b', 'Estor'), (r'\bCtrl\b', 'Control'), (r'\bM\.2\b', 'eme dos'),
     (r'\bWindows\b', 'Uíndous'), (r'\bPowerShell\b', 'Páuer Shel'), (r'\bPython\b', 'Páiton'),
     (r'\bJavaScript\b', 'Yava escript'), (r'\bGitHub\b', 'Guit Jab'), (r'\bgit\b', 'guit'),
     (r'\bweb\b', 'ueb'), (r'\bbackup(s?)\b', r'bécap\1'), (r'\bdriver(s?)\b', r'dráiver\1'),
@@ -56,15 +83,74 @@ DICCION = [
     (r'\.py\b', ' punto pai'), (r'\.js\b', ' punto yota ese'), (r'\.json\b', ' punto yéison'),
     (r'\.md\b', ' punto eme de'), (r'\.cs\b', ' punto ce ese'), (r'\.ps1\b', ' punto pe ese uno'),
     (r'\.bat\b', ' punto bat'), (r'\.html\b', ' punto hache te eme ele'), (r'\.txt\b', ' punto te equis te'),
-    (r'_', ' '), (r'«|»|"', ''), (r'…', '.'),
+    (r'\.exe\b', ' punto e equis e'), (r'\.sh\b', ' punto ese hache'),
+    (r'_', ' '), (r'«|»|"', ''),
 ]
 DICCION = [(re.compile(a), b) for a, b in DICCION]
 
 
 def pronunciar(texto: str) -> str:
+    texto = EMOJIS.sub(' ', texto)
     for patron, reemplazo in DICCION:
         texto = patron.sub(reemplazo, texto)
-    return texto
+    texto = ' '.join(texto.split())
+    texto = re.sub(r'\s+([,.;:!?])', r'\1', texto)          # sin espacio antes de la puntuación
+    texto = re.sub(r',(\s*,)+', ',', texto)                  # sin comas dobles
+    return re.sub(r',\s*([.;:!?])', r'\1', texto).strip(' ,')
+
+
+# Respirar: pausa después de cada oración según cómo termina (segundos, a velocidad normal)
+PAUSAS = {'.': 0.42, '!': 0.45, '?': 0.5, '…': 0.6, ':': 0.32, ';': 0.32}
+# en una oración larga sin comas, respira antes de estas palabras (como haría una persona)
+_RESPIRO_ANTES = re.compile(r'\s+(?=(pero|porque|aunque|así que|entonces|mientras|cuando|para que|'
+                            r'y después|y ahora|o sea|sino|si no)\b)', re.I)
+_PALABRAS_SIN_RESPIRO = 9
+
+
+def _respirar(frase: str) -> str:
+    """Pone una coma (pausa cortita) antes de un conector si van muchas palabras seguidas sin pausa."""
+    out, desde = [], 0
+    for m in _RESPIRO_ANTES.finditer(frase):
+        antes = frase[desde:m.start()]
+        tramo = re.split(r'[,;:]', antes)[-1]
+        if len(tramo.split()) >= _PALABRAS_SIN_RESPIRO and not antes.rstrip().endswith(','):
+            # «…los acentos y entonces…» → «…los acentos, y entonces…» (la coma antes de la «y»)
+            m_y = re.search(r'\s(y|e|o|u|ni|que)$', antes.rstrip(), re.I)
+            if m_y:
+                antes = antes.rstrip()
+                out.append(antes[:m_y.start()] + ',' + antes[m_y.start():])
+            else:
+                out.append(antes.rstrip() + ',')
+        else:
+            out.append(antes)
+        desde = m.start()
+    out.append(frase[desde:])
+    return ''.join(out)
+
+
+# Ánimo de la frase: Piper no tiene emociones, pero se le cambia el tono (agudo/grave), la rapidez, cuánto
+# varía al hablar (expresión), la fuerza y las pausas. Así enojado suena apurado y fuerte, cansado lento
+# y grave, contento más agudo y vivo.
+#            tono  rapidez expresión fuerza pausas
+ANIMOS = {
+    # el tono casi no cambia (si no, deja de sonar a él): el ánimo va por la rapidez, las pausas y la fuerza
+    '':         (1.00, 1.00, 1.05, 1.00, 1.00),
+    'contento': (1.02, 1.05, 1.15, 1.00, 0.92),
+    'enojado':  (1.00, 1.10, 1.20, 1.20, 0.80),
+    'cansado':  (0.97, 0.86, 0.85, 0.85, 1.40),
+    'triste':   (0.98, 0.90, 0.85, 0.85, 1.30),
+    'sorpresa': (1.03, 1.03, 1.15, 1.05, 1.00),
+}
+
+
+def trozos(texto: str) -> list[tuple[str, float]]:
+    """El texto en oraciones, cada una con la pausa que va después: así no sale todo de un tirón."""
+    partes = [p.strip() for p in re.split(r'(?<=[.!?…:;])\s+', texto.strip()) if p.strip()]
+    out = []
+    for p in partes:
+        fin = p[-1]
+        out.append((_respirar(p.replace('…', '.')), PAUSAS.get(fin, 0.38)))
+    return out
 
 
 class Voz:
@@ -105,10 +191,12 @@ class Voz:
     def hablando(self) -> bool:
         return self._hablando or not self._cola.empty()
 
-    def decir(self, texto: str, cortar: bool = False):
+    def decir(self, texto: str, cortar: bool = False, animo: str = '', efecto: str = ''):
+        """animo: '', contento, enojado, cansado, triste o sorpresa (ver ANIMOS).
+        efecto: '', confeti o fiesta (suena primero y la voz entra encima; ver efectos.py)."""
         if cortar:
             self.callar()
-        self._cola.put((texto, self._gen))
+        self._cola.put((texto, self._gen, animo if animo in ANIMOS else '', efecto))
 
     def callar(self):
         self._gen += 1
@@ -245,32 +333,54 @@ class Voz:
             self.estado = 'no'
             log.exception('no pude cargar la voz: %s', e)
 
-    def _daniela(self, texto: str, tono: float):
+    def _daniela(self, texto: str, tono: float, animo: str = ''):
+        """Oración por oración, con su pausa para respirar. Si el texto es largo, va un poquito más
+        despacio (con mucha información, de corrido, parecía una metralleta). «tono» ya trae el del ánimo;
+        acá se aplican la rapidez, la expresión, la fuerza y las pausas del ánimo."""
         from piper import SynthesisConfig
-        cfg = SynthesisConfig(length_scale=tono / self.cfg['velocidad'])
-        pausa = np.zeros(int(self.sr * 0.18), np.float32)
+        _, rapidez, expresion, fuerza, pausas = ANIMOS.get(animo, ANIMOS[''])
+        velocidad = float(self.cfg['velocidad'])
+        inferencia = (self.voz.config.__dict__ if self.voz is not None else {})
+        largo = len(texto)
+        calma = 1.0 + min(0.08, max(0.0, (largo - 110) / 1500))    # hasta 8 % más lento en textos largos
+        cfg = SynthesisConfig(length_scale=tono / (velocidad * rapidez) * calma,
+                              noise_scale=float(inferencia.get('noise_scale') or 0.667) * expresion,
+                              noise_w_scale=min(1.3, float(inferencia.get('noise_w_scale') or 0.8) * expresion))
+        respiro = float(self.cfg.get('pausas_voz', 1.0)) * pausas / velocidad ** 0.5
         partes = []
-        for trozo in self.voz.synthesize(pronunciar(texto), syn_config=cfg):
-            if partes:
-                partes.append(pausa)
-            partes.append(trozo.audio_float_array)
-        partes.append(np.zeros(int(self.sr * 0.08), np.float32))
-        return np.concatenate(partes).astype(np.float32), self.sr
+        for frase, pausa in trozos(pronunciar(texto)):
+            for trozo in self.voz.synthesize(frase, syn_config=cfg):
+                if partes and partes[-1].any():
+                    partes.append(np.zeros(int(self.sr * 0.22 * respiro), np.float32))  # piper la partió
+                partes.append(trozo.audio_float_array)
+            partes.append(np.zeros(int(self.sr * pausa * respiro), np.float32))
+        if not partes:
+            return np.zeros(int(self.sr * 0.1), np.float32), self.sr
+        partes[-1] = np.zeros(int(self.sr * 0.08), np.float32)      # al final, sin pausa larga
+        audio = np.concatenate(partes).astype(np.float32)
+        if fuerza > 1:          # más fuerte sin saturar: comprime un poco (y suena más «apretado», enojado)
+            audio = np.tanh(audio * fuerza * 1.2) / np.tanh(fuerza * 1.2)
+        else:
+            audio = audio * fuerza
+        return audio.astype(np.float32), self.sr
 
     # ------------------------------------------------------------ síntesis con caché
-    def _sintetizar(self, texto: str, solo_cache_xtts: bool = False):
+    def _sintetizar(self, texto: str, solo_cache_xtts: bool = False, animo: str = ''):
         """(audio, frecuencia, tono) con el mejor motor disponible."""
         usar_xtts = self._xtts_listo()
-        tono = float(self.cfg['tono_xtts'] if usar_xtts else self.cfg['tono'])
+        tono = float(self.cfg['tono_xtts'] if usar_xtts else self.cfg['tono']) * ANIMOS.get(animo, ANIMOS[''])[0]
+        # para que no suene plano: cada frase con un tonito apenas distinto (fijo por frase, así sirve la caché)
+        tono *= (0.995, 1.0, 1.005)[sum(map(ord, texto)) % 3]
         motor = 'xtts' if usar_xtts else 'daniela'
-        clave = f'{motor}|{self.cfg.get("voz_referencia")}|{tono:.2f}|{self.cfg["velocidad"]:.2f}|{texto}'
+        clave = (f'{motor}|{self.cfg.get("voz_referencia")}|{tono:.3f}|{self.cfg["velocidad"]:.2f}|'
+                 f'{self.cfg.get("pausas_voz", 1.0)}|{animo}|{texto}')
         hit = self._cache.get(clave)
         if hit is not None:
             self._cache.move_to_end(clave)
             return hit
         if solo_cache_xtts and not usar_xtts:
             return None
-        audio, sr = self._xtts(texto, tono) if usar_xtts else self._daniela(texto, tono)
+        audio, sr = self._xtts(texto, tono) if usar_xtts else self._daniela(texto, tono, animo)
         hit = (audio, sr, tono)
         self._cache[clave] = hit
         while len(self._cache) > 300:
@@ -282,7 +392,7 @@ class Voz:
         import sounddevice as sd
         while True:
             try:
-                texto, gen = self._cola.get(timeout=0.5)
+                texto, gen, animo, efecto = self._cola.get(timeout=0.5)
             except queue.Empty:
                 if self._precalentar and self.voz is not None and (self.motor != 'xtts' or self._xtts_listo()):
                     try:
@@ -294,7 +404,7 @@ class Voz:
             if gen != self._gen or self.voz is None:
                 continue
             try:
-                audio, sr, tono = self._sintetizar(texto)
+                audio, sr, tono = self._sintetizar(texto, animo=animo)
             except Exception:
                 log.exception('falló la síntesis; pruebo con Daniela')
                 self._xtts_lista = False
@@ -306,6 +416,10 @@ class Voz:
                     continue
             if gen != self._gen:
                 continue
+            solo_efecto = 0
+            if efecto and self.cfg.get('efectos', True):
+                import efectos
+                audio, solo_efecto = efectos.mezclar(efectos.generar(efecto, sr), audio, sr)
             sr_salida = int(sr * tono)
             # envolvente para la boca: energía cada 30 ms del tiempo real de reproducción
             paso = max(1, int(sr_salida * 0.03))
@@ -313,6 +427,7 @@ class Voz:
             if n:
                 bloques = np.abs(audio[: n * paso]).reshape(n, paso).mean(axis=1)
                 env = np.clip(bloques / (bloques.max() + 1e-6) * 1.4, 0, 1)
+                env[:solo_efecto // paso] = 0          # el pop del confeti no le mueve la boca
             else:
                 env = np.zeros(1, np.float32)
             dur = len(audio) / sr_salida

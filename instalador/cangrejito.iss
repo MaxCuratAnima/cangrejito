@@ -4,7 +4,7 @@
 ; Sale en instalador\salida\CangrejitoSetup.exe
 
 ; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
-#define Version "1.2.0"
+#define Version "1.3.0"
 #ifndef Dist
   #define Dist "..\dist\Cangrejito"
 #endif

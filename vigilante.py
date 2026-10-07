@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -51,6 +52,83 @@ ARTISTAS_FUNK = ['kordhell', 'dvrst', 'interworld', 'pharmacist', 'ghostface pla
                  'sadfriend', 'lxngvx', 'ncts', 'hensonn', 'kaito shoma', 'sxmpra', 'xantesha', 'mupp',
                  'dxrk', 'slowboy', 'narvent', 'vøj', 'phonkha', 'shadxwbxrn', 'kslv']
 PALABRAS_FUNK = ['phonk', 'funk', 'montagem', 'automotivo', 'mtg ', 'brazilian']
+
+
+# íconos de la música argentina, por género: con cada uno se pone su ropa y toca su instrumento.
+# «=nombre» tiene que ser el artista justo (si no, «rodrigo» se confundiría con «Olivia Rodrigo»).
+GENEROS = {
+    'tango': (['carlos gardel', 'gardel', 'astor piazzolla', 'piazzolla', 'julio sosa', 'aníbal troilo', 'troilo',
+               'osvaldo pugliese', 'pugliese', "juan d'arienzo", "d'arienzo", 'roberto goyeneche', 'goyeneche',
+               'edmundo rivero', 'susana rinaldi', 'bajofondo', 'gotan project', 'tanghetto', 'adriana varela',
+               'hugo del carril', 'francisco canaro', 'carlos di sarli', 'alberto castillo', 'rubén juárez',
+               'tita merello', 'horacio salgán', 'orquesta típica'],
+              ['tango', 'milonga', 'bandoneón']),
+    'cuarteto': (['la mona jiménez', 'la mona jimenez', 'carlos la mona', '=rodrigo', 'ulises bueno', '=la barra',
+                  'damián córdoba', 'damian cordoba', 'jean carlos', 'banda xxi', "q' lokura", 'q lokura',
+                  "la k'onga", 'la konga', '=sabroso', '=chipote', 'walter olmos', 'trulalá', 'tru la la',
+                  'el loco amato', 'luck ra', 'potro rodrigo', 'eugenia quevedo', 'ale ceberio', 'dale q va'],
+                 ['cuarteto', 'cuartetazo']),
+    'cumbia': (['damas gratis', 'pablo lescano', 'los palmeras', '=gilda', 'ráfaga', 'rafaga', 'antonio ríos',
+                'antonio rios', 'la nueva luna', 'los wachiturros', 'yerba brava', 'mala fama', 'supermerk2',
+                'ke personajes', 'el polaco', '=la liga', 'amar azul', 'los charros', 'la t y la m', 'l-gante',
+                'l gante', 'nene malo', 'los del fuego', 'grupo green', 'uriel lozano', 'leo mattioli',
+                'la delio valdez', 'los totora', 'flor de piedra', 'néstor en bloque', 'agapornis', 'los lamas',
+                'pibes chorros', 'la base musical', 'el retutu', 'meta guacha', 'los mirlos', 'karina la princesita'],
+               ['cumbia', 'cumbión', 'rkt', 'turreo']),
+    'rock': (['soda stereo', 'gustavo cerati', '=cerati', 'charly garcía', 'charly garcia', 'luis alberto spinetta',
+              'spinetta', 'fito páez', 'fito paez', 'patricio rey', 'redonditos de ricota', 'los redondos',
+              'indio solari', 'divididos', 'la renga', 'fabulosos cadillacs', 'andrés calamaro', 'andres calamaro',
+              'los rodríguez', 'babasónicos', 'babasonicos', 'callejeros', 'la bersuit', 'bersuit vergarabat',
+              'ciro y los persas', 'los piojos', 'las pastillas del abuelo', '=sumo', '=virus',
+              'los abuelos de la nada', 'serú girán', 'seru giran', 'almendra', 'pescado rabioso', 'vox dei',
+              'el mató a un policía motorizado', 'attaque 77', 'ataque 77', 'los gardelitos', 'catupecu machu',
+              '=airbag', 'ratones paranoicos', 'viejas locas', 'intoxicados', 'el bordo', 'las pelotas', '=skay',
+              'los auténticos decadentes', 'los autenticos decadentes', 'enanitos verdes', 'david lebón',
+              '=pappo', 'rata blanca', '=hermética', 'almafuerte', 'los violadores', '2 minutos', 'el otro yo',
+              'bandalos chinos', 'conociendo rusia', 'usted señálemelo', 'el kuelgue', 'patricio rey',
+              'los tipitos', 'guasones', 'el cuarteto de nos', 'no te va gustar', 'la vela puerca'],
+             ['rock nacional']),
+    'trap': (['=duki', 'bizarrap', '=bzrp', 'nicki nicole', '=tini', 'maría becerra', 'maria becerra',
+              'paulo londra', '=trueno', '=khea', '=emilia', 'lit killah', '=wos', 'milo j', 'ysy a',
+              'rusherking', 'tiago pzk', 'neo pistea', 'callejero fino', '=cazzu', '=ca7riel', 'paco amoroso',
+              'nathy peluso', '=dillom', '=mesita', '=bhavi', 'seven kayne', 'lucho ssj', '=ecko', '=fmk',
+              'big one', '=lali', 'zecca', 'six sex', 'acru', 'kaleb di masi', '=homer el mero mero'],
+             ['bzrp', 'music sessions', 'freestyle', 'trap']),
+}
+GENEROS['folklore'] = (ARTISTAS_GUITARRA, PALABRAS_GUITARRA)
+
+def _artistas(tema: str) -> tuple[str, list[str]]:
+    """(campo del artista, cada artista por separado) de un «Artista, Otro - Tema»."""
+    artista = tema.lower().split(' - ', 1)[0].strip()
+    return artista, [a.strip() for a in re.split(r',|&| feat\.?| ft\.?| x |;', artista) if a.strip()]
+
+
+def _coincide(nombre: str, artista: str, cada: list[str]) -> bool:
+    nombre = str(nombre).lower().strip()
+    if not nombre:
+        return False
+    if nombre.startswith('='):
+        return nombre[1:] in cada
+    return re.search(r'(?<!\w)' + re.escape(nombre) + r'(?!\w)', artista) is not None
+
+
+def genero_musical(tema: str, extra: dict | None = None, apagados=()) -> str:
+    """El género del tema para vestir al cangrejito: funk, folklore, tango, cuarteto, cumbia, rock,
+    trap, o '' si no es ninguno. «extra»: artistas que suma cada persona en la configuración;
+    «apagados»: géneros que la persona no quiere."""
+    extra = extra or {}
+    if 'funk' not in apagados and es_funk(tema, extra.get('funk') or ()):
+        return 'funk'
+    artista, cada = _artistas(tema)
+    t = tema.lower()
+    # primero por el artista (más seguro), después por palabras del título
+    for g, (nombres, _) in GENEROS.items():
+        if g not in apagados and any(_coincide(a, artista, cada) for a in list(nombres) + list(extra.get(g) or ())):
+            return g
+    for g, (_, palabras) in GENEROS.items():
+        if g not in apagados and any(re.search(r'(?<!\w)' + re.escape(w.strip()), t) for w in palabras):
+            return g
+    return ''
 
 
 TEMAS_AUTO = rutas.DATOS / 'temas_auto.json'   # temas propios para el Camaro (se edita a mano)

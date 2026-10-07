@@ -29,7 +29,9 @@ def test_la_ventana_guarda_lo_que_se_elige(app):
 class Grabador:
     """Narrador sin mascota ni voz: anota lo que diría."""
     def __init__(self, **prefs):
+        import fechas
         self.n_ = N.Narrador.__new__(N.Narrador)
+        self.n_.fecha = fechas.datos('')
         self.n_.cfg = Cfg(config.POR_DEFECTO, nombre='Lu', **prefs)
         self.dichos = []
         self.n_.decir = lambda texto, **k: self.dichos.append(texto)

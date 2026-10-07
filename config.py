@@ -14,6 +14,19 @@ RUTA = rutas.DATOS / 'config.json'
 
 POR_DEFECTO = {
     'nombre': '',            # cómo te llama (si está vacío, lo pregunta la primera vez)
+    'trato': 'masculino',    # masculino («compañero»), femenino («compañera») o neutro (sin frases con género)
+    'bebida': 'mate',        # qué toma mientras labura: mate, cafe, te o nada
+    'bandera': 'argentina',  # la de la hinchada cuando jugás (o «ninguna»)
+    'fechas_argentinas': True,   # ropa, escarapela y curiosidades en las fechas patrias y culturales
+    'actividades_juego': True,   # cuando jugás en el otro monitor: joystick, pochoclos, hinchada
+    'avisos_uso': True,      # avisa del límite de 5 horas y de la memoria del chat
+    'pausas': 0,             # minutos entre pausas activas (estirarse, tomar agua); 0 = nunca
+    'generos_apagados': [],  # géneros con los que no se cambia de ropa (folklore, tango, cuarteto, …)
+    'artistas_extra': {},    # artistas que sumás a cada género: {"cumbia": ["Mi banda"], …}
+    'respiro': 0.7,          # segundos de silencio entre una frase y la siguiente
+    'efectos': True,
+    'chistes': True,         # de vez en cuando, en los ratos libres, tira un chiste         # sonido del confeti cuando festeja
+    'pausas_voz': 1.0,       # cuánto respira entre oraciones (1 = normal, más = más pausado)
     'silencio': False,
     'volumen': 0.5,
     'motor': 'daniela',      # xtts (placa de video, más natural) o daniela (procesador)

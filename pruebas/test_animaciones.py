@@ -16,7 +16,8 @@ def test_todas_las_poses_se_dibujan(app):
 
 
 def test_paseos_libres_se_dibujan(mascota):
-    for paseo in ('joystick', 'pochoclos', 'hinchada', 'mate', 'celular', 'auriculares', 'guitarra', 'auto'):
+    for paseo in ('joystick', 'pochoclos', 'hinchada', 'mate', 'celular', 'auriculares', 'guitarra', 'auto',
+                  'bandoneon', 'cuarteto', 'cumbia', 'rock', 'trap', 'noquis', 'izar', 'saludo_bandera'):
         mascota.paseo = paseo
         for t in (0.1, 2.5, 6.5, 19.0):
             mascota.t0 = time.monotonic() - t
@@ -39,7 +40,7 @@ def test_mate_mientras_labura(mascota):
 
 
 def test_camaro_maneja_derrapa_y_se_baja(mascota, app):
-    mascota.musica, mascota.funk = True, True
+    mascota.musica, mascota.genero = True, 'funk'
     mascota.paseo, mascota.paseo_fin = 'auto', time.monotonic() + 999
     ag = app.primaryScreen().availableGeometry()
     izq, der = ag.left() - S.OX * mascota.E, ag.right() + 1 - (S.OX + 34) * mascota.E

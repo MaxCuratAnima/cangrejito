@@ -20,8 +20,9 @@ from collections import deque
 
 from PySide6.QtCore import QPoint, QPointF, QRect, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QCursor, QGuiApplication, QPainter
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QDialog, QMenu, QWidget
 
+import fechas
 import sprites as S
 from globo import WINDOWS, Globo, banderas_flotante
 from sprites import Pose
@@ -32,6 +33,11 @@ ACCESORIOS = {
     'web': {'mundo'}, 'pensar': {'netbook', 'pensar'}, 'llamar': {'exclamacion'}, 'preguntar': {'pregunta'},
 }
 MATE_TRABAJOS = {'teclear', 'terminal', 'pensar', 'leer'}   # donde tiene una pinza libre para el mate
+# música argentina: con cada género, su actividad (paseo) y la ropa que lleva mientras suena
+GENERO_PASEO = {'folklore': 'guitarra', 'funk': 'auto', 'tango': 'bandoneon', 'cuarteto': 'cuarteto',
+                'cumbia': 'cumbia', 'rock': 'rock', 'trap': 'trap'}
+ROPA_GENERO = {'folklore': {'gaucho'}, 'tango': {'funyi', 'panuelo_blanco'}, 'cuarteto': {'lentejuelas'},
+               'cumbia': {'gorrita', 'camiseta'}, 'rock': {'campera'}, 'trap': {'gorra', 'cadena'}}
 
 
 def _fase_mate(u: float) -> str:
@@ -94,8 +100,11 @@ class Mascota(QWidget):
         self.pendiente_mareo = False
         self.escuchando = False          # le estás dictando a Claude
         self.musica = False              # suena Spotify
-        self.guitarra = False            # el tema es folklore / guitarra criolla
-        self.funk = False                # suena funk o phonk: se sube al Camaro
+        self.genero = ''                 # el género del tema (vigilante.genero_musical): ropa y actividad
+        self.fecha = fechas.datos('')    # fecha patria o cultural de hoy (ropa, escarapela, mástil)
+        self.mastil = None               # el mástil del Día de la Bandera (lo crea la app)
+        self.despues_de_caminar = None   # paseo que sigue al llegar (ir a izar o a saludar la bandera)
+        self.prox_bandera = 0.0
         self.derrape_hasta = 0.0
         self.bajando_auto = None         # cuándo empezó a bajarse del auto (para ponerse a laburar)
         self.mate_ini = None             # cuándo empezó el mate de trabajo (None: sin mate)
@@ -126,6 +135,17 @@ class Mascota(QWidget):
         self._timer.start(33)
 
     # ================================================================ API
+    @property
+    def funk(self) -> bool:
+        return self.genero == 'funk'
+
+    @property
+    def guitarra(self) -> bool:
+        return self.genero == 'folklore'
+
+    def _con_musica(self) -> bool:
+        return self.musica and self.cfg.get('animaciones_musica', True)
+
     def actividad(self, nombre: str):
         if nombre == self.base:
             return
@@ -251,12 +271,23 @@ class Mascota(QWidget):
         if self.modo == 'oculto':
             return
         self._guardar_posicion()
-        ag = self._area(self._pantalla_actual())
+        pant = self._pantalla_actual()
+        ag = self._area(pant)
         centro = self.px + S.W * self.E / 2
-        self.dir = 1 if centro > ag.center().x() else -1
+        # sale por el borde de afuera: en el monitor derecho, por la derecha; en el izquierdo, por la
+        # izquierda (si saliera por el lado de otro monitor, se lo vería aparecer ahí y desaparecer)
+        g, y = pant.geometry(), round(self.py + (S.OY + 20) * self.E)
+        otro_der = QGuiApplication.screenAt(QPoint(g.right() + 5, y)) is not None
+        otro_izq = QGuiApplication.screenAt(QPoint(g.left() - 5, y)) is not None
+        if otro_der != otro_izq:
+            self.dir = -1 if otro_der else 1
+        else:
+            self.dir = 1 if centro > ag.center().x() else -1
         self.momento('despedida', 2.2)
         self.modo = 'saliendo'
         self.paseo_x = (ag.right() + 40.0) if self.dir > 0 else (ag.left() - S.W * self.E - 40.0)
+        # si le toca cruzar todo el monitor, camina más rápido (que no tarde más de unos 8 segundos)
+        self.vel_salida = max(85.0, abs(self.paseo_x - self.px) / 8)
 
     def pausar(self, si: bool):
         """Juego o video en pantalla completa: se esconde y no gasta nada."""
@@ -282,18 +313,21 @@ class Mascota(QWidget):
         self.vx, self.vy = 0.0, 0.0
         self.modo = 'cayendo'
 
+    def _ventanas(self):
+        """Las ventanas propias en el orden en que van apiladas (la última, arriba de todo): el mástil,
+        el cangrejito, el globo, y encima de todo la configuración, los avisos y el menú abiertos."""
+        out = [w for w in (self.mastil, self, self.globo) if w is not None and w.isVisible()]
+        out += [w for w in QApplication.topLevelWidgets()
+                if w.isVisible() and isinstance(w, (QDialog, QMenu)) and w not in out]
+        return out
+
     def subir(self):
         """Arriba de todas las ventanas (en Linux no hay administrador que lo haga por nosotros)."""
-        self.raise_()
-        if self.globo.isVisible():
-            self.globo.raise_()
+        for w in self._ventanas():
+            w.raise_()
 
     def hwnds(self):
-        out = []
-        for w in (self, self.globo):
-            if w.isVisible():
-                out.append(int(w.winId()))
-        return out
+        return [int(w.winId()) for w in self._ventanas()]
 
     # ================================================================ geometría
     def _pantalla_actual(self):
@@ -444,7 +478,7 @@ class Mascota(QWidget):
                 self._manejar(dt, ahora, ag)
                 return
             if self.paseo_x is not None and (self.modo != 'suelo' or self.paseo == 'caminar'):
-                vel = {'entrando': 75.0, 'saliendo': 85.0}.get(self.modo, VEL_PASEO)
+                vel = {'entrando': 75.0, 'saliendo': getattr(self, 'vel_salida', 85.0)}.get(self.modo, VEL_PASEO)
                 paso = vel * dt * (1 if self.paseo_x > self.px else -1)
                 self.dir = 1 if paso > 0 else -1
                 siguiente = self.px + paso
@@ -471,6 +505,10 @@ class Mascota(QWidget):
                     else:
                         self.paseo_fin = 0
                         self._guardar_posicion()
+                        que, self.despues_de_caminar = self.despues_de_caminar, None
+                        if que and self.mastil is not None and self.mastil.quieto() \
+                                and abs(self.px - self._junto_al_mastil()) < 12:
+                            self._empezar_bandera(que, ahora)
                 else:
                     self.px = siguiente
 
@@ -545,15 +583,69 @@ class Mascota(QWidget):
         else:
             self.trabajando_desde = None
         sin_mate = self.mate_ini is None or _fase_mate(ahora - self.mate_ini) == 'dejado'
-        if (sin_mate and not moviendo and self.base in MATE_TRABAJOS and self.trabajando_desde
+        if (sin_mate and not moviendo and self._bebida() != 'nada' and self.base in MATE_TRABAJOS and self.trabajando_desde
                 and ahora - self.trabajando_desde > 40 and ahora >= self.prox_mate):
             self.mate_ini = ahora
             self.prox_mate = ahora + 300            # un mate cada 5 minutos de laburo
 
+    def _bebida(self) -> str:
+        """Qué toma: mate, cafe, te o nada (la configuración); el día de la Pachamama, caña con ruda."""
+        return self.cfg.get('bebida', 'mate')
+
+    # ================================================================ Día de la Bandera
+    def _junto_al_mastil(self) -> float:
+        """Dónde pararse para izar o saludar: a la izquierda del palo (o a la derecha si no hay lugar)."""
+        palo = self.mastil.x_palo()
+        izq, der = self._limites(self._area(self.mastil.pantalla()))
+        x = palo - (S.OX + 27) * self.E
+        return x if x >= izq else min(der, palo - (S.OX + 7) * self.E)
+
+    def _empezar_bandera(self, que: str, ahora: float):
+        self.paseo, self.paseo_x = que, None
+        self.paseo_fin = ahora + (6.8 if que == 'izar' else 6.0)
+        self.dir = 1 if self.mastil.x_palo() > self.px + S.W * self.E / 2 else -1
+        if que == 'izar':
+            self.mastil.izar()
+
+    def _paseo_bandera(self, ahora: float) -> bool:
+        """El Día de la Bandera va a izarla y después, cada tanto, a saludarla. Si la movés, la sigue."""
+        m = self.mastil
+        if m is None or not m.quieto() or self.escuchando:
+            return False
+        if self.paseo in ('izar', 'saludo_bandera') and ahora < self.paseo_fin:
+            return True
+        if self.paseo == 'caminar' and self.paseo_x is not None:
+            return False
+        if m.pantalla().name() != self._pantalla_actual().name():
+            return False
+        if m.izada < 1.0:
+            que = 'izar'
+        elif ahora >= self.prox_bandera:
+            que = 'saludo_bandera'
+        else:
+            return False
+        self.prox_bandera = ahora + random.uniform(150, 360)
+        destino = self._junto_al_mastil()
+        if abs(destino - self.px) < 6:
+            self._empezar_bandera(que, ahora)
+        else:
+            self.paseo, self.paseo_x, self.paseo_fin = 'caminar', destino, ahora + 30
+            self.despues_de_caminar = que
+        return True
+
+    def mastil_movido(self):
+        """Soltaste el mástil en otro lado: se sorprende y va a saludarla de nuevo."""
+        if self.modo == 'suelo' and self.base == 'libre':
+            self.momento('sorpresa', 0.9)
+        self.prox_bandera = 0.0
+
     def _pose_mate(self, p: Pose, ahora: float, quiero: set, manos: bool):
         fase = _fase_mate(ahora - self.mate_ini)
+        termo = {'termo'} if p.bebida == 'mate' else set()       # café y té: sin termo ni cebada
+        if p.bebida != 'mate' and fase == 'cebar':
+            fase = 'mano'
         if fase == 'dejado' or not manos:
-            quiero |= {'termo', 'mate_piso'}
+            quiero |= termo | {'mate_piso'}
             return
         izq = p.brazos[0]
         if fase == 'cebar':
@@ -561,25 +653,26 @@ class Mascota(QWidget):
             p.brazos, p.mirar = (izq, 'servir'), (1, 1)
         elif fase == 'sorbo':
             # se estira por arriba de la netbook y le da un sorbo, contento
-            quiero |= {'termo', 'mate_boca'}
+            quiero |= termo | {'mate_boca'}
             p.brazos = (izq, 'acercar')
             p.ojos, p.rubor, p.aplastar, p.mirar = 'feliz', True, -1, (0, 0)
         else:                                   # teclea con una pinza y con la otra sostiene el mate
-            quiero |= {'termo', 'mate_mano'}
+            quiero |= termo | {'mate_mano'}
             p.brazos = (izq, 'sostener')
 
     def _paseos(self, ahora: float):
-        if self.paseo == 'guitarra' and not (self.musica and self.guitarra
-                                             and self.cfg.get('animaciones_musica', True)):
-            self.paseo, self.paseo_fin = 'quieto', 0.0       # cambió el tema o se cortó: deja la guitarra
-        if self.paseo == 'auto' and not (self.musica and self.funk and self.cfg.get('animaciones_musica', True)):
-            self.paseo, self.paseo_fin, self.vx = 'quieto', 0.0, 0.0   # se bajó del auto
+        for genero, paseo in GENERO_PASEO.items():
+            if self.paseo == paseo and not (self._con_musica() and self.genero == genero):
+                # cambió el tema o se cortó: deja el instrumento (o se baja del auto)
+                self.paseo, self.paseo_fin, self.vx = 'quieto', 0.0, 0.0
         if self.paseo == 'auto' and self.escuchando:
             return                                               # te escucha sin bajarse
         if self.modo != 'suelo' or self.base != 'libre' or self.mom:
             return
+        if self._paseo_bandera(ahora):
+            return
         # estás jugando en el otro monitor: juega con vos, mira con pochoclos o te alienta
-        juego = self._hacia_juego() is not None
+        juego = self._hacia_juego() is not None and self.cfg.get('actividades_juego', True)
         if juego and not self.escuchando:
             if (self.paseo == 'caminar' and self.paseo_x is not None) or ahora < self.paseo_fin:
                 return
@@ -590,7 +683,7 @@ class Mascota(QWidget):
             if r < 0.52:
                 self.paseo, self.paseo_x, self.paseo_fin = 'pochoclos', None, ahora + random.uniform(20, 40)
                 return
-            if r < 0.62:
+            if r < 0.62 and self.cfg.get('bandera', 'argentina') != 'ninguna':
                 self.paseo, self.paseo_x, self.paseo_fin = 'hinchada', None, ahora + random.uniform(5, 9)
                 return
             if r < 0.70 and self.musica:
@@ -598,19 +691,18 @@ class Mascota(QWidget):
                 self.momento('bailar', 15)
                 return
             # si no, algo de lo de siempre (caminar, sentarse, el mate…)
-        # con música y sin nada que hacer: baila o se la escucha con los auriculares
-        if self.musica and not self.escuchando and not juego and self.cfg.get('animaciones_musica', True):
-            if self.paseo in ('auriculares', 'guitarra', 'auto') and ahora < self.paseo_fin:
+        # con música y sin nada que hacer: toca su instrumento, baila o se la escucha con los auriculares
+        if self._con_musica() and not self.escuchando and not juego:
+            propio = GENERO_PASEO.get(self.genero)
+            if self.paseo in ('auriculares', propio) and ahora < self.paseo_fin:
                 return
-            if self.funk and random.random() < 0.85:
-                # funk / phonk: arriba del Camaro con lentes, de punta a punta y derrapando
-                if self.paseo != 'auto':
+            if propio and random.random() < (0.85 if propio == 'auto' else 0.75):
+                # funk: el Camaro; folklore: la criolla; tango: el bandoneón; cuarteto: a bailar;
+                # cumbia: el teclado; rock: la eléctrica; trap: el micrófono
+                if self.paseo != propio:
                     self.vx = 0.0
-                self.paseo, self.paseo_x, self.paseo_fin = 'auto', None, ahora + random.uniform(25, 45)
-            elif self.guitarra and random.random() < 0.75:
-                # folklore: se sienta a tocar la criolla y canta
-                self.paseo, self.paseo_x, self.paseo_fin = 'guitarra', None, ahora + random.uniform(25, 45)
-            elif not self.guitarra and random.random() < 0.35:
+                self.paseo, self.paseo_x, self.paseo_fin = propio, None, ahora + random.uniform(25, 45)
+            elif not propio and random.random() < 0.35:
                 self.paseo, self.paseo_x, self.paseo_fin = 'auriculares', None, ahora + random.uniform(20, 35)
             else:
                 self.paseo, self.paseo_x, self.paseo_fin = 'quieto', None, 0.0
@@ -632,8 +724,12 @@ class Mascota(QWidget):
         if pasa < 0.14:
             self.paseo, self.paseo_fin = 'auriculares', ahora + random.uniform(15, 30)
             return
-        if pasa < 0.20:
+        clave = self.fecha['clave']
+        if pasa < (0.32 if clave == 'mate' else 0.20) and self._bebida() != 'nada':
             self.paseo, self.paseo_fin = 'mate', ahora + random.uniform(25, 50)
+            return
+        if clave == 'noquis' and pasa < 0.30 and self.cfg.get('fechas_argentinas', True):
+            self.paseo, self.paseo_fin = 'noquis', ahora + random.uniform(20, 35)   # el 29, ñoquis
             return
         if pasa < 0.23:
             self.paseo, self.paseo_fin = 'joystick', ahora + random.uniform(15, 35)
@@ -667,7 +763,11 @@ class Mascota(QWidget):
     # ================================================================ pose
     def _pose(self, ahora: float) -> Pose:
         t = ahora - self.t0
-        p = Pose(t=t, dir=self.dir)
+        bebida = self._bebida()
+        if self.paseo == 'mate' and self.fecha['clave'] == 'pachamama' and self.cfg.get('fechas_argentinas', True):
+            bebida = 'ruda'                         # el primero de agosto, caña con ruda
+        p = Pose(t=t, dir=self.dir, bebida=bebida if bebida != 'nada' else 'mate',
+                 bandera=self.cfg.get('bandera', 'argentina'))
         quiero: set[str] = set()
         mirar_libre = True
 
@@ -714,8 +814,14 @@ class Mascota(QWidget):
 
         if self.ayudantes > 0:
             quiero.add('ayudante')
-        if self.musica and self.guitarra and self.cfg.get('animaciones_musica', True):
-            quiero.add('gaucho')
+        # la ropa del género que suena; si no, la de la fecha (la escarapela va siempre en las patrias)
+        ropa_musica = ROPA_GENERO.get(self.genero, set()) if self._con_musica() else set()
+        quiero |= ropa_musica
+        if self.cfg.get('fechas_argentinas', True) and self.fecha['clave']:
+            if self.fecha['escarapela']:
+                quiero.add('escarapela')
+            if not ropa_musica:
+                quiero |= self.fecha['ropa']
         if self.paseo == 'auto' and self.modo == 'suelo' and self.base == 'libre':
             # sentado adentro del Camaro descapotable, con lentes
             quiero |= {'auto', 'lentes'}
@@ -774,8 +880,10 @@ class Mascota(QWidget):
             p.brazos, p.fase_brazos = ('reposo', 'saludo'), int(t * 6)
             p.ojos, p.brillo, p.boca_forma = 'feliz', True, 'sonrisa'
         elif m == 'despedida':
-            p.brazos, p.fase_brazos = ('reposo', 'saludo'), int(t * 5)
-            p.ojos, p.cejas, p.boca_forma = 'llorar', 'preocupado', 'triste'
+            # se despide contento: «¡nos vemos!», no es que no vuelva
+            p.brazos, p.fase_brazos = ('reposo', 'saludo'), int(t * 6)
+            p.ojos, p.brillo, p.boca_forma = 'feliz', True, 'sonrisa'
+            p.y = -1 if int(u * 4) % 2 else 0
             return False
         elif m == 'sorpresa':
             p.ojos, p.cejas, p.boca_forma = 'grandes', 'arriba', 'o'
@@ -1020,6 +1128,82 @@ class Mascota(QWidget):
                 self._particula(S.NOTA, cx + random.uniform(10, 50), cy + 20, random.uniform(-8, 14), -30,
                                 0, 2.0, vaiven=True, escala=0.6)
             return False
+        elif self.paseo == 'bandoneon':
+            # tango: sentado con el bandoneón, abriendo y cerrando el fuelle, con mucho sentimiento
+            quiero.add('bandoneon')
+            p.patas = 'sentado'
+            p.brazos = ('sostener', 'sostener')
+            p.fuelle = 5 + round(3 * math.sin(t * 2.0))
+            p.ojos = 'cerrados' if int(t / 4) % 3 else 'normal'
+            p.cejas = 'preocupado' if int(t / 6) % 2 else ''
+            p.cuerpo_y = 2 + (1 if math.sin(t * 2.0) > 0.5 else 0)
+            self._notas(ahora, 1.0, 1.5)
+            return False
+        elif self.paseo == 'cuarteto':
+            # cuarteto: el pasito de costado, con los brazos que van y vienen
+            compas = int(t * 4)
+            p.y = -1 if compas % 2 else 0
+            p.brazos = ('baile', 'festejo') if (compas // 2) % 2 else ('festejo', 'baile')
+            p.fase_brazos = compas
+            p.patas, p.fase, p.dir = 'caminar', compas, 1 if (compas // 4) % 2 else -1
+            p.ojos, p.boca_forma, p.brillo = 'feliz', 'sonrisa', True
+            self._notas(ahora, 0.6, 0.9)
+            return False
+        elif self.paseo == 'cumbia':
+            # cumbia: el teclado colgado, y cada tanto «¡las manos arriba!»
+            quiero.add('teclado_musical')
+            arriba = int(t / 2) % 4 == 3
+            p.brazos = ('arriba', 'teclado') if arriba else ('teclado', 'teclado')
+            p.fase_brazos = int(t * 8)
+            p.cuerpo_y = int(t * 4) % 2
+            p.ojos, p.boca_forma = ('feliz', 'o') if arriba else ('normal', 'sonrisa')
+            p.mirar = (0, 1) if not arriba else (0, -1)
+            self._notas(ahora, 0.7, 1.1)
+            return False
+        elif self.paseo == 'rock':
+            # rock nacional: la eléctrica, lentes negros y a cabecear
+            quiero |= {'electrica', 'lentes'}
+            p.brazos, p.fase_brazos = ('sostener', 'teclado'), int(t * 10)
+            p.cuerpo_y = 2 * (int(t * 5) % 2)
+            p.boca_forma = 'o' if int(t / 1.5) % 2 else 'sonrisa'
+            if int(t / 3) % 4 == 3:
+                p.y = -2 if int(t * 6) % 2 else 0            # saltito de rockero
+            self._notas(ahora, 0.6, 1.0)
+            return False
+        elif self.paseo == 'trap':
+            # trap: micrófono en una pinza, la otra marcando el ritmo
+            quiero |= {'microfono', 'lentes'}
+            p.brazos, p.fase_brazos = ('baile', 'acercar'), int(t * 2)
+            p.cuerpo_y = int(t * 3) % 2
+            p.boca_forma = ('o', 'sonrisa', 'o', '')[int(t * 5) % 4]
+            self._notas(ahora, 0.8, 1.2)
+            return False
+        elif self.paseo == 'izar':
+            # tira de la soga y la bandera sube por el mástil
+            tira = int(t * 2.5) % 2
+            p.brazos = ('arriba', 'reposo') if tira else ('reposo', 'arriba')
+            p.y = -1 if tira else 0
+            p.mirar, p.cejas = (self.dir, -1), 'arriba'
+            return False
+        elif self.paseo == 'saludo_bandera':
+            # firme, saludando a la bandera y cantándole «Aurora»
+            p.brazos, p.fase_brazos = ('reposo', 'rascar'), 0
+            p.mirar, p.brillo = (self.dir, -1), True
+            p.boca_forma = 'o' if int(t * 1.5) % 2 else 'sonrisa'
+            self._notas(ahora, 0.9, 1.3)
+            return False
+        elif self.paseo == 'noquis':
+            # el 29: sentado comiendo ñoquis, con el billete abajo del plato
+            quiero.add('noquis')
+            p.patas, p.cuerpo_y = 'sentado', 2
+            bocado = int(t / 1.6) % 2 == 0
+            if bocado:
+                quiero.add('tenedor')
+            p.brazos = ('reposo', 'acercar' if bocado else 'sostener')
+            p.mirar = (0, 1)
+            p.ojos, p.rubor = ('feliz', True) if not bocado else ('normal', False)
+            p.boca_forma = '' if bocado else ('o' if int(t * 4) % 2 else 'sonrisa')
+            return False
         elif self.paseo == 'pochoclos':
             # te mira jugar comiendo pochoclos; cada tanto se sorprende
             quiero.add('pochoclos')
@@ -1067,6 +1251,14 @@ class Mascota(QWidget):
             p.cejas = p.cejas or 'arriba'
             p.boca_forma = p.boca_forma or 'sonrisa'
         return True
+
+    def _notas(self, ahora: float, cada_min: float, cada_max: float):
+        """Notitas musicales que salen cada tanto (tocando, cantando o bailando)."""
+        if ahora >= self.prox_nota:
+            self.prox_nota = ahora + random.uniform(cada_min, cada_max)
+            cx, cy = self._cabeza()
+            self._particula(S.NOTA, cx + random.uniform(-40, 40), cy + 16, random.uniform(-12, 12), -30,
+                            0, 2.0, vaiven=True, escala=0.6)
 
     def _hacia_juego(self):
         """(lado, 0) hacia el monitor donde estás jugando, o None si no hay juego en otro monitor."""

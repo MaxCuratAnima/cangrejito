@@ -17,7 +17,7 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 sys.path.insert(0, str(AQUI))
 
-from PySide6.QtCore import QBuffer, QIODevice, QPoint, Qt
+from PySide6.QtCore import QBuffer, QIODevice, QPoint, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QImage, QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
@@ -25,10 +25,12 @@ import version
 
 import configuracion
 import eventos
+import fechas
 import rutas
 import sprites as S
 from config import Config
 from mascota import Mascota
+from mastil import Mastil
 from narrador import Narrador
 from vigilante import Vigilante
 from voz import Voz
@@ -67,6 +69,10 @@ def _icono() -> QIcon:
     return QIcon(QPixmap.fromImage(grande))
 
 
+PRUEBA_VOZ = ('¡Hola, {n}! Así sueno yo. Te voy a contar lo que hace Claude, con mis pausas para respirar, '
+              'así no parezco una metralleta.')
+
+
 def main():
     _registro()
     args = set(sys.argv[1:])
@@ -89,9 +95,9 @@ def main():
     voz = Voz(cfg)
     if not cfg.get('nombre'):
         # la primera vez: bienvenida con la configuración (nombre, cuánto habla, personalidad, voz)
-        configuracion.abrir(cfg, lambda: voz.decir(f'¡Hola, {cfg["nombre"] or "compa"}! Así sueno yo.',
-                                                    cortar=True), bienvenida=True)
-    voz.precalentar(Narrador.frases_fijas(cfg['nombre']))
+        configuracion.abrir(cfg, lambda: voz.decir(PRUEBA_VOZ.format(n=cfg['nombre'] or 'compa'), cortar=True),
+                            bienvenida=True)
+    voz.precalentar(Narrador.frases_fijas(cfg['nombre'], cfg))
     m = Mascota(cfg, voz)
     vig = Vigilante(cfg, m.hwnds)
     vig.forzar = '--ya' in args
@@ -106,6 +112,8 @@ def main():
 
     def poner(clave, valor):
         cfg[clave] = valor
+        if clave == 'pausas_voz':
+            cfg['respiro'] = round(0.7 * float(valor), 2)
         cfg.guardar()
         nar._al_dia()
 
@@ -142,17 +150,38 @@ def main():
     opciones(menu, 'Cuánto habla', 'habla', configuracion.HABLA_MENU)
     opciones(menu, 'Comentarios', 'detalle', configuracion.DETALLE_MENU)
     sub_personalidad = menu.addMenu('Personalidad')
+    opciones(sub_personalidad, 'Cómo te trata', 'trato', configuracion.TRATO_MENU)
+    opciones(sub_personalidad, 'Qué toma mientras labura', 'bebida', configuracion.BEBIDA_MENU)
+    opciones(sub_personalidad, 'Bandera para alentarte', 'bandera', configuracion.BANDERA)
+    sub_personalidad.addSeparator()
     interruptor(sub_personalidad, 'Malas palabras suaves', 'groserias')
     interruptor(sub_personalidad, 'Se queja de los proyectos largos', 'quejas')
+    interruptor(sub_personalidad, 'Tira chistes en los ratos libres', 'chistes')
+    interruptor(sub_personalidad, 'Avisa del límite y de compactar', 'avisos_uso')
+    interruptor(sub_personalidad, 'Juega con vos cuando jugás', 'actividades_juego')
+    interruptor(sub_personalidad, 'Fechas patrias y culturales argentinas', 'fechas_argentinas')
+    opciones(sub_personalidad, 'Pausas activas', 'pausas', configuracion.PAUSAS)
     sub_musica = menu.addMenu('Música')
     interruptor(sub_musica, 'Comenta los temas de Spotify', 'comentar_musica')
-    interruptor(sub_musica, 'Baila (guitarra con folklore, Camaro con phonk)', 'animaciones_musica')
+    interruptor(sub_musica, 'Baila y se viste según la música', 'animaciones_musica')
+    sub_generos = sub_musica.addMenu('Géneros')
+    for clave_g, texto_g in configuracion.GENEROS:
+        a_g = QAction(texto_g, sub_generos, checkable=True)
+
+        def genero_si(si, k=clave_g):
+            apagados = [g for g in (cfg.get('generos_apagados') or []) if g != k] + ([] if si else [k])
+            poner('generos_apagados', apagados)
+        a_g.triggered.connect(genero_si)
+        sub_generos.addAction(a_g)
+        sincronizar.append(lambda a=a_g, k=clave_g: a.setChecked(k not in (cfg.get('generos_apagados') or [])))
     sub_voz = menu.addMenu('Voz')
     a_silencio = QAction('Silenciar', sub_voz, checkable=True)
     sub_voz.addAction(a_silencio)
     sincronizar.append(lambda: a_silencio.setChecked(bool(cfg['silencio'])))
     opciones(sub_voz, 'Volumen', 'volumen', configuracion.VOLUMEN, cercano=True)
     opciones(sub_voz, 'Velocidad', 'velocidad', configuracion.VELOCIDAD, cercano=True)
+    opciones(sub_voz, 'Pausas para respirar', 'pausas_voz', configuracion.RESPIRA, cercano=True)
+    interruptor(sub_voz, 'Efectos de sonido (confeti)', 'efectos')
     if cfg.get('xtts_python'):                # solo si hay XTTS configurado (opcional, desde el código)
         sub_motor = sub_voz.addMenu('Motor de voz')
         grupo_motor = QActionGroup(sub_motor)
@@ -172,7 +201,7 @@ def main():
     a_salir = menu.addAction('Salir')
 
     def configurar():
-        configuracion.abrir(cfg, lambda: nar.decir(f'¡Hola, {cfg["nombre"]}! Así sueno yo.', alta=True))
+        configuracion.abrir(cfg, lambda: nar.decir(PRUEBA_VOZ.format(n=cfg['nombre']), alta=True))
         a_silencio.setChecked(cfg['silencio'])
         nar._al_dia()
 
@@ -203,7 +232,7 @@ def main():
             m.dormir()
 
     a_silencio.triggered.connect(lambda _=False: alternar_silencio())
-    a_probar.triggered.connect(lambda: nar.decir(f'¡Hola, {cfg["nombre"]}! Así sueno yo.', alta=True))
+    a_probar.triggered.connect(lambda: nar.decir(PRUEBA_VOZ.format(n=cfg['nombre']), alta=True))
     a_acerca.triggered.connect(lambda: QMessageBox.about(
         None, 'Acerca del Cangrejito',
         f'<b>{version.NOMBRE} {version.VERSION}</b><br>'
@@ -251,13 +280,52 @@ def main():
             # Claude cerrada y el cangrejito ni había salido: se cierra (el lanzador lo vuelve a abrir)
             app.quit()
 
+    # ---------------------------------------------------------------- fechas patrias y culturales
+    mastil = Mastil(cfg, m._area)
+    m.mastil = mastil
+    mastil.movido.connect(m.mastil_movido)
+    hoy = {'clave': None}
+
+    def poner_mastil():
+        # el Día de la Bandera: el mástil plantado al lado del cangrejito (él la iza)
+        hoy_si = m.fecha['actividad'] == 'mastil' and cfg.get('fechas_argentinas', True) and m.modo != 'oculto'
+        if not hoy_si:
+            if mastil.plantado:
+                mastil.sacar()
+        elif m.pausado:
+            mastil.esconder()                 # un juego tapa todo: vuelve cuando se libere
+        elif not mastil.plantado:
+            ag = m._area(m._pantalla_actual())
+            centro = m.px + S.W * m.E / 2
+            lado = 1 if centro + 260 < ag.right() else -1
+            mastil.plantar(centro + lado * 220, m._pantalla_actual())
+        elif not mastil.isVisible():
+            mastil.mostrar()
+
+    def revisar_fecha():
+        clave = fechas.hoy()
+        if clave != hoy['clave']:
+            hoy['clave'] = clave
+            datos = fechas.datos(clave)
+            m.fecha = datos
+            nar.nueva_fecha(datos)
+            log.info('fecha: %s', datos['nombre'] or 'día común')
+        poner_mastil()
+
+    revisar_fecha()
+    reloj_fecha = QTimer()
+    reloj_fecha.timeout.connect(revisar_fecha)
+    reloj_fecha.start(30_000)
+
     def llegar():
         nar.saludo_app()
+        poner_mastil()
         if voz.estado == 'bajando':
             nar.decir('Estoy bajando mi voz de internet, es una sola vez. En un ratito te hablo.')
 
     def se_fue():
         # se despidió y salió caminando: se cierra del todo, así no ocupa memoria
+        mastil.sacar()
         nar.oculto = True
         nar.callar()
         app.quit()
@@ -283,6 +351,7 @@ def main():
         # juego o video en pantalla completa: se muda al monitor libre; si no queda ninguno, se esconde
         monitores = nombres(rects)
         m.monitores_tapados(monitores)
+        poner_mastil()
         estado_gpu['completa'] = bool(monitores)
         placa()
         callar_si_no_se_ve()
@@ -325,10 +394,13 @@ def main():
     vig.escuchando.connect(escuchando)
     vig.musica.connect(musica)
     def tema(titulo: str):
-        from vigilante import es_de_guitarra, es_funk
-        m.funk = es_funk(titulo, cfg.get('artistas_funk') or ())
-        m.guitarra = not m.funk and es_de_guitarra(titulo, cfg.get('artistas_guitarra') or ())
-        nar.tema_nuevo(titulo)
+        from vigilante import genero_musical
+        extra = dict(cfg.get('artistas_extra') or {})
+        extra.setdefault('funk', cfg.get('artistas_funk') or [])
+        extra.setdefault('folklore', cfg.get('artistas_guitarra') or [])
+        m.genero = genero_musical(titulo, extra, set(cfg.get('generos_apagados') or ()))
+        log.info('tema: %s (%s)', titulo[:60], m.genero or 'sin género')
+        nar.tema_nuevo(titulo, m.genero)
 
     vig.tema.connect(tema)
     vig.juego_pesado.connect(vr)

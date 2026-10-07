@@ -22,124 +22,188 @@ from PySide6.QtCore import QObject, QTimer, Signal
 
 log = logging.getLogger('cangrejito.narrador')
 
-# Personalidad: un cangrejito laburador y compinche. La persona es su compañera, no su jefa: nada de «jefe».
+# Personalidad: un cangrejito laburador y compinche, rioplatense. La persona es su compañera, no su jefa:
+# nada de «jefe». Marcas en las frases:
+#   {n}     el nombre o apodo de la persona
+#   {o}     o / a según cómo quiere que la traten (las frases con {o} no se usan con trato neutro)
+#   {mate}  lo que toma: «un mate», «un cafecito», «un tecito» (o «un descanso» si no toma nada)
 PEDIDO = ['¡Pedido nuevo! A ver…', '¡Dale, me pongo!', 'Ahí voy.', 'Mmm, a ver qué hay que hacer.',
           '¡Manos a la pinza!', '¡Uh, laburo! Me encanta.', 'Dale, {n}, ahí me fijo.', '¡Vamos que se puede!',
-          'Okey, {n}, ahí me pongo con eso.', 'Anotado, compañero.', 'Dale, {n}, lo vemos juntos.',
+          'Okey, {n}, ahí me pongo con eso.', 'Anotado, compañer{o}.', 'Dale, {n}, lo vemos juntos.',
           '¡Joya, dale!', 'De una, {n}.', '¡Ya me pongo las pilas!', 'Bancame que lo miro.',
-          '¡Uh, qué buena! Arranco.', 'Dale que va.', 'Listo el pollo, me pongo.', '¡Vamo\' arriba!',
+          '¡Uh, qué buena! Arranco.', 'Dale que va.', 'Listo el pollo, me pongo.', '¡Vamos arriba!',
           'Dejámelo a mí.', '¡Esa! Me encanta cuando hay que laburar.', 'Mirá vos… a ver qué onda.',
-          'Okey, {n}, lo encaro.', '¡Al toque!', 'Tranqui, que yo me encargo.']
+          'Okey, {n}, lo encaro.', '¡Al toque!', 'Tranqui, que yo me encargo.', 'Ahí le meto.',
+          'Ya mismo, {n}.', 'Me pongo el overol y arranco.', 'Dale, que hoy estoy inspirado.', 'Anotadísimo.',
+          'Uh, este me gusta.', 'A ver con qué venís hoy, {n}.', 'Esto lo saco en un toque.',
+          'Pará que me acomodo y arranco.', 'Bueno, bueno, a laburar.', 'Hecho, {n}. Arranco.',
+          'Me arremango y voy.', '¡Uh, qué pedido! Vamos.', 'Ahí te lo miro.', 'Lo que vos digas, {n}.',
+          'Uh, un desafío. Me copa.', 'Vamos a ver qué sale de acá.', 'Sale y vale, {n}.']
 LEER = ['Leyendo {f}', 'A ver qué dice {f}', 'Le echo un ojo a {f}', 'Chusmeo {f}', 'Abro {f}, a ver qué hay',
         'Le pego una leída a {f}', 'Me fijo en {f}', 'Reviso {f} de pe a pa', 'A ver qué onda {f}',
-        'Espiando {f}', 'Me leo {f} un toque', 'Pispeo {f}']
+        'Espiando {f}', 'Me leo {f} un toque', 'Pispeo {f}', 'Le pego una ojeada a {f}', 'Hojeo {f}',
+        'Me fijo qué tiene {f}', 'Repaso {f}', 'A ver de qué va {f}', 'Me empapo de {f}']
 LEER_SIN = ['Leyendo un archivo', 'Reviso un archivo', 'Chusmeo un archivo', 'Le pego una leída a algo',
-            'Pispeo un archivo', 'Me fijo en un archivo']
+            'Pispeo un archivo', 'Me fijo en un archivo', 'Le echo un ojo a algo', 'Repaso unas cosas']
 BUSCAR = ['Buscando en los archivos', 'Busco en el código', '¿Dónde estará?', 'Lupa en mano…',
           'Estaba por acá, seguro', '¿Dónde lo habré puesto?', 'Revuelvo el cajón a ver…',
           'Busco la aguja en el pajar', 'Rastreando…', 'Modo detective activado', 'Lo tengo en la punta de la pinza…',
-          'A ver dónde se escondió']
+          'A ver dónde se escondió', 'Busco por todos lados', '¿Dónde se metió?', 'Sigo la pista',
+          'Uh, ¿dónde estaba esto?', 'Busco y rebusco', 'Pispeo por acá y por allá']
 EDITAR = ['Editando {f}', 'Le cambio unas cositas a {f}', 'Retocando {f}', 'Le meto mano a {f}',
           'Arreglo {f}', 'Le hago unos ajustes a {f}', 'Emprolijo {f}', 'Le doy una manito a {f}',
-          'Toqueteo {f}', 'Le pego una arreglada a {f}', 'Mejoro {f}', 'Meto la pinza en {f}']
+          'Toqueteo {f}', 'Le pego una arreglada a {f}', 'Mejoro {f}', 'Meto la pinza en {f}',
+          'Le hago un retoque a {f}', 'Acomodo {f}', 'Le doy una vuelta de tuerca a {f}', 'Afino {f}', 'Pulo {f}']
 CREAR = ['Escribiendo {f}', 'Creando {f}', 'Armo {f} desde cero', 'Hago {f} nuevito',
-         'Le doy vida a {f}', 'Fabrico {f}', 'Nace {f}']
+         'Le doy vida a {f}', 'Fabrico {f}', 'Nace {f}', 'Cocino {f}', 'Le doy forma a {f}']
 COMANDO = ['Corriendo un comando', 'Le mando un comando a la consola', 'Ejecuto algo en la terminal',
            'Tecleo en la consola', 'A ver qué dice la terminal', 'Le tiro un comandito a la compu',
            'Consola, hacé lo tuyo', 'Le doy órdenes a la compu', 'A ver si la terminal me hace caso',
-           'Tecla va, tecla viene', 'Comando va…']
+           'Tecla va, tecla viene', 'Comando va…', 'Le pido algo a la consola', 'Terminal, te toca',
+           'Dale, consola, no me falles']
 WEB_BUSCAR = ['Buscando en internet', 'Averiguo en internet', 'Le pregunto a internet',
-              'Googleo un toque', 'Investigo en la web', 'Me fijo qué dice internet']
-WEB_LEER = ['Leyendo una página web', 'Miro una página', 'Chusmeo una página', 'Leo lo que encontré']
-NAVEGADOR = ['Mirando el navegador', 'Navego un poco', 'Surfeando la web', 'Clic por acá, clic por allá']
+              'Googleo un toque', 'Investigo en la web', 'Me fijo qué dice internet', 'Chusmeo internet',
+              'Me informo un toque', 'Busco a ver qué dicen por ahí']
+WEB_LEER = ['Leyendo una página web', 'Miro una página', 'Chusmeo una página', 'Leo lo que encontré',
+            'Me leo lo que encontré', 'A ver qué dice esta página']
+NAVEGADOR = ['Mirando el navegador', 'Navego un poco', 'Surfeando la web', 'Clic por acá, clic por allá',
+             'Ando navegando', 'Miro una página en el navegador']
 UNITY = ['Tocando Unity', 'Meto mano en Unity', 'Unity, allá voy', 'Acomodo cosas en Unity',
          'Me metí en Unity, bancame', 'Peleándome un rato con Unity', 'Unity me está dando laburo',
          'Toqueteando la escena', 'A ver qué dice Unity']
 AYUDANTE = ['Llamo a un ayudante', 'Mando a un compañero a investigar', 'Refuerzos en camino',
-            'Llamo a la banda', 'Un cangrejito amigo me da una mano', 'Pido ayuda a un colega']
-PAGINA = ['Armo una página', 'Publico una página', 'Te armo algo lindo para ver']
-SKILL = ['Leyendo unas instrucciones', 'Repaso el manual', 'Me fijo en la receta']
+            'Llamo a la banda', 'Un cangrejito amigo me da una mano', 'Pido ayuda a un colega',
+            'Le paso un laburito a un compañero', 'Somos un equipo, eh']
+PAGINA = ['Armo una página', 'Publico una página', 'Te armo algo lindo para ver', 'Te preparo una página']
+SKILL = ['Leyendo unas instrucciones', 'Repaso el manual', 'Me fijo en la receta', 'Leo el instructivo']
 PLAN = ['Armo un plan', 'Primero pienso un plan', 'Antes de meter mano, planifico',
-        'Pienso bien cómo encararlo', 'Hagamos las cosas bien: primero un plan']
+        'Pienso bien cómo encararlo', 'Hagamos las cosas bien: primero un plan', 'Pienso la estrategia',
+        'Primero me armo el mapa']
 PLAN_LISTO = ['¡{n}! El plan está listo, miralo y decime.', '¡Plan listo, {n}! Pegale una mirada.',
-              '¡{n}, ahí tenés el plan! ¿Qué te parece?', 'Che, {n}, el plan ya está. ¿Le das el okey?']
+              '¡{n}, ahí tenés el plan! ¿Qué te parece?', 'Che, {n}, el plan ya está. ¿Le das el okey?',
+              '¡{n}, el plan está! Leelo con calma.']
 PREGUNTA = ['¡{n}! Tengo una pregunta para vos.', 'Che, {n}, necesito que elijas algo.',
             '¡{n}! Decidí vos esta.', '{n}, ¿me das una mano con esta decisión?',
-            'Che, {n}, esto lo tenés que elegir vos.', '¡{n}! Una preguntita.']
+            'Che, {n}, esto lo tenés que elegir vos.', '¡{n}! Una preguntita.', 'Che, {n}, tengo una duda.',
+            '¡{n}! Elegí vos, que sabés.']
 PERMISO = ['¡{n}! Necesito tu permiso.', 'Che, {n}, ¿me das permiso para seguir?',
            '{n}, ¿me dejás hacer esto?', '¡{n}! Necesito tu okey para seguir.',
-           'Che, {n}, ¿le doy para adelante?']
+           'Che, {n}, ¿le doy para adelante?', '¡{n}! ¿Me das luz verde?', '{n}, ¿le doy?']
 ESPERA = ['Te estoy esperando…', '¿Seguimos, {n}?', 'Acá estoy, cuando quieras.',
-          'Cuando puedas, {n}, te espero.', 'Yo acá, tranqui, esperándote.', '¿Andás por ahí, {n}?']
+          'Cuando puedas, {n}, te espero.', 'Yo acá, tranqui, esperándote.', '¿Andás por ahí, {n}?',
+          'Cuando vuelvas, seguimos.', 'Sin apuro, {n}.', 'Acá ando, esperándote con {mate}.']
 ELEGIR = ['¡{n}! Necesito que me respondas algo.', 'Che, {n}, te dejé una pregunta.',
-          '{n}, falta que me contestes algo.']
+          '{n}, falta que me contestes algo.', 'Che, {n}, me quedó una pregunta colgada.']
 ERROR = ['Uy, falló. Pruebo otra cosa.', 'Ups, eso no anduvo.', 'Mmm, error. Ya lo miro.',
          'Pucha, no salió. Otra vez.', 'Uh, se me escapó. Ya lo arreglo.', 'Nah, eso no. Pruebo por otro lado.',
          '¡Epa! Algo no cerró.', 'Uy, le erré. Ahí lo acomodo.', 'Bueno, no pasa nada, otra vez.',
-         'Ups, me mandé una macana. Ya lo arreglo.']
+         'Ups, me mandé una macana. Ya lo arreglo.', 'Pifié. Ya lo arreglo.', 'Bueno, así no era.',
+         'Uh, no. Ya veo qué pasó.', 'Otra vez a la carga.', 'Ups, se me chispoteó.']
 FRUSTRADO = ['¡Uf, esto no quiere andar!', 'Uh, qué terco que está esto…', 'Tranqui, ya lo saco.',
              '¡Pero qué cabeza dura esto!', 'Me está haciendo renegar, pero no me rindo.',
              '¡La puta madre, otra vez no!', '¡Andá, andá, porquería!',
-    'Esto está más duro que turrón de Navidad.', '¡Dale, andá de una vez!']
+             'Esto está más duro que turrón de Navidad.', '¡Dale, andá de una vez!', '¡No puede ser, che!',
+             '¡Qué bronca!', '¡Esto me tiene podrido!', '¡Uf, qué cagada!', '¡Paciencia, cangrejo, paciencia!',
+             '¡Ufa, otra vez!', '¡Me saca canas verdes esto!']
 LISTO = ['¡Listo!', '¡Terminé!', '¡Ya está!', '¡Salió!', '¡Joya!', '¡Listo el pollo!', '¡Ahí está!',
-         '¡Terminado!', '¡Salió con fritas!', '¡Todo en orden!']
+         '¡Terminado!', '¡Salió con fritas!', '¡Todo en orden!', '¡Ya está, {n}!', '¡Hecho!', '¡Ahí lo tenés!',
+         '¡Pum, listo!', '¡Y quedó!', '¡Diez puntos!', '¡Fenómeno!', '¡Una masa!']
 ORGULLO = ['¡Qué laburo, eh! Terminé.', '¡Listo! Me salió redondo.', '¡Terminé! Eso sí que fue un trabajo.',
-           '¡Uf, qué laburo! Pero quedó bárbaro.', '¡Terminé! Quedó de diez.', '¡Listo! Me merezco un mate.',
-           '¡Ya está! Eso fue un parto, pero salió.']
+           '¡Uf, qué laburo! Pero quedó bárbaro.', '¡Terminé! Quedó de diez.', '¡Listo! Me merezco {mate}.',
+           '¡Ya está! Eso fue un parto, pero salió.', '¡Me salió una masa!', '¡Esto quedó de lujo!',
+           '¡Terminé! Quedó un chiche.']
 MIMO = ['¡Jiji, cosquillas!', '¡Gracias!', '¡Ay, qué lindo!', '¡Más, más!', 'Te quiero, {n}.',
-        '¡Ay, basta que me pongo colorado!', '¡Qué mimoso que estás hoy!', '¡Uy, me derrito!',
-        '¡Sos lo más, {n}!', 'Jiji, ¡para, para!']
+        '¡Ay, basta que me pongo colorado!', '¡Qué mimos{o} que estás hoy!', '¡Uy, me derrito!',
+        '¡Sos lo más, {n}!', 'Jiji, ¡para, para!', '¡Ay, qué lindo, {n}!', '¡Me encanta que me mimes!',
+        'Jiji, me hacés cosquillas.']
 VOLVISTE = ['¡Volviste!', '¡Hola de nuevo!', '¡Ah, sos vos! Me había quedado dormido.', '¡Uy, me agarraste durmiendo!',
             '¡Eeeh, volviste, {n}!', '¿Dónde andabas? Te estaba esperando.', '¡Uy! Estaba echándome una siestita.',
-            '¡Buenas! Justo me estaba por dormir de nuevo.']
+            '¡Buenas! Justo me estaba por dormir de nuevo.', '¡Hola de vuelta, {n}!', '¡Te extrañé!',
+            '¡Ah, llegaste! ¿Seguimos?']
 SESION = ['¡Sesión nueva! ¿Qué hacemos?', '¡Arrancamos una sesión nueva!', '¡Chat nuevo! ¿En qué andamos?',
-          '¡Arrancamos de cero! ¿Qué hay para hacer?', '¡Nueva aventura, {n}!']
-RESUMIR = ['¡Seguimos donde quedamos!', '¡Volvimos! ¿En qué estábamos?', 'Retomamos, dale.']
+          '¡Arrancamos de cero! ¿Qué hay para hacer?', '¡Nueva aventura, {n}!', '¡Chat nuevito, {n}!',
+          '¡Hoja en blanco! ¿Qué hacemos?']
+RESUMIR = ['¡Seguimos donde quedamos!', '¡Volvimos! ¿En qué estábamos?', 'Retomamos, dale.',
+           '¡Seguimos con lo nuestro!', 'Volvemos a la carga.']
 CON_VOZ = ['¡Ya puedo hablar!', '¡Volví a hablar!', '¡Ah, qué alivio, puedo hablar!',
            '¡Por fin! Tenía tanto para decir…', '¡Ahí va! Me destapaste la boca.']
-CHAU = ['¡Chau, {n}!', '¡Nos vemos, {n}!', '¡Chau! Te voy a extrañar.', '¡Nos vemos, que andes bien!',
-        '¡Chau, {n}! Cuidate.', '¡Hasta la próxima, {n}!', 'Bueno, me voy… ¡no te olvides de mí!']
+CHAU = ['¡Chau, {n}!', '¡Nos vemos, {n}!', '¡Nos vemos al rato!', '¡Nos vemos, que andes bien!',
+        '¡Chau, {n}! Cuidate.', '¡Hasta la próxima, {n}!', '¡Chau, chau! Cuando abras Claude, vuelvo.',
+        '¡Abrazo grande, {n}!', '¡Me voy a dormir una siesta! Nos vemos.', '¡Nos vemos en la próxima!',
+        '¡Hasta la vuelta, {n}!', '¡Chau! Hoy laburamos bárbaro.', '¡Me voy, pero vuelvo enseguida!',
+        '¡Nos vemos, {n}! Yo te guardo el lugar.']
 PIENSO = ['Estoy pensando esto: ', 'Mi idea: ', 'Voy a esto: ', 'Te cuento en qué ando: ', 'Pienso: ',
           'El plan: ', 'Ahora: ', '']
-EXPLICO = ['Te cuento: ','La idea es esta: ', 'Te explico: ', 'Mirá: ', 'Para que sepas: ', '']
+EXPLICO = ['Te cuento: ', 'La idea es esta: ', 'Te explico: ', 'Mirá: ', 'Para que sepas: ', '']
 TARDA = ['Esto tarda un poquito, ya sigo.', 'Bancame un cachito, que esto tarda.', 'Paciencia, que ya sale.',
-         'Esto va lento, pero va.', 'Un toquecito más y listo.', 'Aguantá que esto se toma su tiempo.']
+         'Esto va lento, pero va.', 'Un toquecito más y listo.', 'Aguantá que esto se toma su tiempo.',
+         'Se está cocinando.', 'Un cachito más.', 'Esto va a fuego lento.']
 TARDA_CON = ['Esto tarda un poquito. {e}', 'Bancame un cachito. {e}', 'Va lento, pero va. {e}',
-             'Paciencia. {e}']
+             'Paciencia. {e}', 'Se está cocinando. {e}']
 VA_TARDAR = ['Ojo, {n}, esto va a tardar un rato: {d}.', 'Che, {n}, esto viene para largo: {d}.',
-             'Preparate un mate, {n}, que esto tarda: {d}.', 'Esto lleva su tiempo, {n}: {d}.',
-             'Uh, esto va a tardar un montón, qué paja: {d}.', 'Agarrá una silla, {n}: {d}.']
+             'Preparate {mate}, {n}, que esto tarda: {d}.', 'Esto lleva su tiempo, {n}: {d}.',
+             'Uh, esto va a tardar un montón, qué paja: {d}.', 'Agarrá una silla, {n}: {d}.',
+             'Ponete cómod{o}, {n}: {d}.', 'Esto va para largo, {n}: {d}.']
 VA_TARDAR_SIN = ['Ojo, {n}, esto va a tardar un rato.', 'Che, {n}, esto viene para largo.',
-                 'Preparate un mate, {n}, que esto tarda.', 'Uh, esto va a tardar un montón, qué paja.']
+                 'Preparate {mate}, {n}, que esto tarda.', 'Uh, esto va a tardar un montón, qué paja.',
+                 'Ponete cómod{o}, {n}, que esto tarda.']
 CHARLA = ['Acá ando, cuidando el escritorio.', '¿Tomaste agua, {n}?', 'Si necesitás algo, avisame.',
           'Qué lindo día para programar.', '¿Sabías que los cangrejos caminan de costado? Yo también.',
-          'Me estiro un poquito…', 'Estoy aburrido… ¿no hay nada para hacer?']
-MADRUGADA = ['Che, {n}, ya es tarde… ¿no te vas a dormir?', 'Son las {h}. Yo aguanto, pero vos descansá, eh.']
+          'Me estiro un poquito…', 'Estoy aburrido… ¿no hay nada para hacer?',
+          'Pensando en la inmortalidad del cangrejo.', 'Despacito y buena letra.', 'Acá ando, de guardia.',
+          '¿Ya comiste algo, {n}?', 'Me pinta {mate}. ¿Vos?', 'Qué lindo es tener compañía.',
+          '¿Sabías que a los cangrejos les vuelve a crecer una pata si la pierden?',
+          '¿Sabías que algunos cangrejos se saludan moviendo las pinzas? Así, mirá.',
+          'Un día voy a aprender a programar solito.', 'Me gusta este escritorio, eh. Tiene onda.']
+MADRUGADA = ['Che, {n}, ya es tarde… ¿no te vas a dormir?', 'Son las {h}. Yo aguanto, pero vos descansá, eh.',
+             'Es re tarde, {n}. Mañana seguimos, ¿eh?', 'Las {h}… yo ya bostezo.']
 MUSICA = ['¡Uh, temazo!', '¡Esta me gusta!', 'Pongo mis mejores pasos.', '¡Uh, qué temón!',
           '¡Esa! Subile un poquito.', 'Uh, este tema me encanta.', '¡Qué buena elección, {n}!',
-          '¡Temazo, eh!', 'Esta va directo a mi lista.']
-MUSICA_ARTISTA = ['¡Uh, {a}! Temazo.', 'Ah, {a}… buen gusto, {n}.', '¡Uh, suena {a}!']
+          '¡Temazo, eh!', 'Esta va directo a mi lista.', '¡Qué temita!', '¡Subile, subile!',
+          '¡Me hace mover las patas!', 'Con esta me prendo.', 'Este me lo sé.']
+MUSICA_ARTISTA = ['¡Uh, {a}! Temazo.', 'Ah, {a}… buen gusto, {n}.', '¡Uh, suena {a}!', '¡Uh, {a}! Qué nivel.',
+                  '¡Suena {a}! Me prendo.']
+# con cada género, su comentario (y se pone su ropa: ver mascota.ROPA_GENERO)
+MUSICA_GENERO = {
+    'folklore': ['¡Uh, folklore! Me pongo el sombrero.', '¡Qué linda zamba!', 'Esto pide un fogón y unas empanadas.',
+                 '¡Aro, aro, aro!', '¡Upa! Que siga la chacarera.'],
+    'tango': ['Uh, tango. Me pongo el funyi.', '¡Qué bandoneón, por favor!', 'Esto es pura nostalgia.',
+              'Gardel cada día canta mejor.', '¡Mirá qué compadrito que me pongo!'],
+    'cuarteto': ['¡Uh, cuarteto! A bailar.', '¡Que no pare el tunga tunga!', 'Esto pide un baile en ronda.',
+                 '¡Uh, qué cuartetazo!', '¡Me puse la camisa con brillos!'],
+    'cumbia': ['¡Uh, cumbia! Las manos arriba.', '¡Que no pare la cumbia!', '¡Uh, qué teclado!',
+               'Con esta se baila hasta el final.', '¡Póngale cumbia!'],
+    'rock': ['¡Uh, rock nacional! Me pongo la campera.', '¡Esto es un himno!', 'Esto se canta a los gritos.',
+             '¡Qué temazo del rock nacional!', '¡Pogo, pogo!'],
+    'trap': ['¡Uh, trap! Me pongo la gorra.', '¡Qué flow!', '¡Esto es un fuego!', '¡Rompió todo!', '¡Qué barras!'],
+    'funk': ['¡Uh, phonk! Me subo al Camaro.', '¡Arranco el auto!', '¡A derrapar!'],
+}
+# el grito de festejo antes del «¡Listo!» (cuando terminó algo largo, siempre; si no, a veces)
+GRITO = ['¡Sí!', '¡Vamos!', '¡Golazo!', '¡Tomá!', '¡Eso!', '¡Bien ahí!', '¡Eeeh!', '¡Sí, señor!']
 # humor según cuánto viene durando el laburo (se dicen una vez cada una, en orden)
 # (buena onda: si se queja, es del proyecto, nunca de la persona)
 CANSADO = ['Uff, este proyecto tiene tela para cortar. Vamos bien igual.', 'Esto es más largo de lo que parecía, pero avanza.',
            'Mamita, cuánta cosa tiene esto. Bueno, dale que sale.', 'Esto tiene para rato, pero va tomando forma.',
-           'Uff, qué proyecto grandote. Me gusta, eh.']
+           'Uff, qué proyecto grandote. Me gusta, eh.', 'Esto tiene más vueltas que una calesita. Pero sale.']
 PAJA = ['Esto va para largo, pero sin drama.', 'Uh, este pedazo es medio denso. Paso a paso.',
         'Qué largo es esto, eh. Pero vamos bien.', 'Esta parte es un poquito embolante, ya la paso.',
-        'Me estoy quemando un poco la cabeza con esto, pero sale.']
+        'Me estoy quemando un poco la cabeza con esto, pero sale.', 'Despacito y buena letra, que esto es largo.']
 HARTO = ['¡Uf, esto no se termina más! Pero ya le veo la punta.', '¡Qué parto este proyecto! Sigo, sigo.',
          '¡La puta madre, qué largo! Bueno, falta menos.', 'Ya ni sé qué hora es… pero esto sale.',
-         '¡Uff! Este proyecto es un maratón. Vamos que se puede.']
+         '¡Uff! Este proyecto es un maratón. Vamos que se puede.', 'Esto es más largo que esperar el colectivo. Pero sale.']
 CASI = ['¡Ya casi, {n}! Me falta lo último.', '¡Falta poquito! Aguantá.', '¡Última y terminamos!',
-        '¡Ya lo veo, ya lo veo! Falta nada.', '¡Vamos que ya sale!']
-MITAD = ['Vamos por la mitad, {n}.', 'La mitad hecha, dale que va.', 'Mitad adentro, mitad afuera.']
+        '¡Ya lo veo, ya lo veo! Falta nada.', '¡Vamos que ya sale!', '¡Último esfuercito!', '¡Recta final!']
+MITAD = ['Vamos por la mitad, {n}.', 'La mitad hecha, dale que va.', 'Mitad adentro, mitad afuera.',
+         '¡Mitad del camino, vamos bien!']
 FIN_LARGO = ['¡Por fin terminé todo, Dios!', '¡Por fin, la puta madre! ¡Terminé!', '¡Lo logramos, {n}! ¡Por fin!',
              '¡Terminé! Me merezco unas vacaciones.', '¡Aleluya! ¡Terminé todo!',
-             '¡Por fin! Pensé que no salía más de esta.']
+             '¡Por fin! Pensé que no salía más de esta.', '¡Por fin! Me merezco {mate}.',
+             '¡Lo logramos! Qué maratón.']
 # saltar entre chats/proyectos
-SALTO = ['En {p}:', 'Ahora lo de {p}:', 'Paso a {p}:', 'Vuelvo a {p}:', 'Y en {p}…']
+SALTO = ['En {p}:', 'Ahora lo de {p}:', 'Paso a {p}:', 'Vuelvo a {p}:', 'Y en {p}…', 'Ahora con {p}:']
 SALTO_QUEJA = ['Uh, ¿ahora lo de {p}? Dale, voy.', 'Salto a {p}, ¡qué movido está hoy!',
-               'De vuelta a {p}, esto no para.', 'Me cambio el gorrito: {p}.']
+               'De vuelta a {p}, esto no para.', 'Me cambio el gorrito: {p}.', '¿Otra vez {p}? Bueno, dale.',
+               '¡Qué ida y vuelta! Voy a {p}.']
 SATURADO = ['¡{k} proyectos a la vez! Qué día movido.', 'Uff, {k} chats juntos… esto es un malabar, pero sale.',
             'Tengo más proyectos abiertos que patas. Y tengo muchas patas.', 'Día cargadito, eh. Vamos de a uno.']
 # de vez en cuando, si hace mucho que no hay nada que hacer y estás en la compu
@@ -147,9 +211,38 @@ ABURRIDO = ['Che, {n}, tengo ganas de hacer algo. ¿Por qué no hacemos algo en 
             'Me aburro, {n}… ¿no hay nada para programar?', '¿Y si arrancamos algún proyecto, {n}?',
             'Che, {n}, ¿no tenés algo para que haga? Estoy al pedo.',
             'Estoy más al pedo que cenicero de moto, {n}. ¿Hacemos algo?',
-            'Ya jugué al celu, bailé, me estiré… ¿hacemos algo, {n}?']
+            'Ya jugué al celu, bailé, me estiré… ¿hacemos algo, {n}?',
+            'Che, {n}, me estoy oxidando. ¿Arrancamos algo?', 'Tengo las pinzas inquietas, {n}. ¿Hacemos algo?']
 TARDA_MUCHO = ['Uh, esto se está tomando su tiempo…', 'Dale, dale, dale… vos podés, comando.',
-               'Esto va a paso de tortuga, pero va.', 'Sigue cocinándose. Paciencia.']
+               'Esto va a paso de tortuga, pero va.', 'Sigue cocinándose. Paciencia.',
+               'Esto está más lento que una tortuga con mochila.', 'Uh, qué paciencia hay que tenerle a esto.']
+# chistes y boludeces para los ratos libres (si están prendidos; nunca en un día de memoria)
+CHISTES = ['¿Por qué los programadores confunden Halloween con Navidad? Porque 31 en octal es 25 en decimal.',
+           'Hay 10 tipos de personas: las que entienden binario y las que no.',
+           '¿Sabés cuál es el colmo de un cangrejo? Que lo manden a caminar derecho.',
+           'Un cangrejo entra a un bar… de costado, obvio.',
+           '¿Cuál es el café más peligroso del mundo? El ex preso.',
+           '¿Cómo se despiden los químicos? Ácido un placer.',
+           'En mi máquina funciona. Bueno, yo no tengo máquina: tengo pinzas.',
+           'Le pregunté a la inteligencia artificial si me quería. Me dijo que depende del contexto.',
+           'Escribí un chiste sobre la caché, pero seguro ya lo escuchaste.',
+           'El noventa por ciento del código anda. El otro noventa por ciento hay que arreglarlo.',
+           'Tengo una relación muy sana con los bugs: ellos aparecen y yo hago como que no los vi.',
+           'Mi plan para hoy: mate, código y siesta. No necesariamente en ese orden.',
+           'Con la inflación que hay, ya ni los bugs salen baratos.',
+           '¿Viste el dólar hoy? Yo tampoco. Prefiero no mirar.',
+           'Mi psicólogo me dijo que deje de hablar solo. Le expliqué que no hablo solo: le hablo a Claude.',
+           'Dicen que el cangrejo camina para atrás. Mentira: camina de costado, que es distinto.',
+           '¿Qué le dijo un bit al otro? Nos vemos en el bus.',
+           'Me mandaron a hacer un backup. Ahora tengo dos cangrejos y ninguno sabe cuál es el original.']
+# pausas activas (si están prendidas en la configuración)
+PAUSA = ['Che, {n}, hace un rato largo que estás en la compu. ¿Te estirás un toque?',
+         '{n}, ¿tomaste agua? Hidratate, eh.',
+         'Descansá la vista un ratito, {n}: mirá algo lejos por veinte segundos.',
+         'Pausa activa, {n}: hombros arriba, hombros abajo. ¡Así!',
+         'Che, {n}, parate un toque y caminá un poquito. Yo te cuido la compu.',
+         'Acordate de pestañear, {n}. Yo también me olvido.',
+         'Che, {n}, ¿y si hacemos una pausa y te preparás {mate}?']
 
 SILENCIOSAS = {'ToolSearch', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskList', 'TaskGet', 'TaskOutput', 'TaskStop',
                'Monitor', 'ScheduleWakeup', 'CronCreate', 'CronDelete', 'CronList', 'ListMcpResourcesTool',
@@ -158,21 +251,48 @@ SILENCIOSAS = {'ToolSearch', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskList'
 CASTELLANO = {'el', 'la', 'los', 'las', 'de', 'del', 'en', 'y', 'para', 'con', 'que', 'un', 'una', 'por', 'al', 'se', 'lo', 'su'}
 
 
-NOMBRE = {'n': 'compa'}
-PREFERENCIAS = {'groserias': True}         # lo actualiza el narrador con la configuración
-GROSERAS = re.compile(r'puta|al pedo|porquer|paja|carajo|mierda', re.I)
+NOMBRE = {'n': 'compa', 'o': 'o', 'mate': 'un mate'}   # lo actualiza el narrador con la configuración
+PREFERENCIAS = {'groserias': True, 'neutro': False}
+GROSERAS = re.compile(r'puta|al pedo|porquer|paja|carajo|mierda|cagad', re.I)
+# cómo te trata: masculino (compañero), femenino (compañera) o neutro (sin las frases con género)
+TRATO = {'masculino': 'o', 'femenino': 'a', 'neutro': ''}
+BEBIDAS = {'mate': 'un mate', 'cafe': 'un cafecito', 'te': 'un tecito', 'nada': 'un descanso'}
 _recientes: dict[int, deque] = {}
+# el ánimo con que se dice cada lista (la voz cambia tono, rapidez y pausas: ver voz.ANIMOS)
+ANIMO_LISTA = {id(lista): animo for lista, animo in (
+    (FRUSTRADO, 'enojado'), (CANSADO, 'cansado'), (PAJA, 'cansado'), (HARTO, 'cansado'),
+    (TARDA_MUCHO, 'cansado'), (MADRUGADA, 'cansado'), (ABURRIDO, 'cansado'), (ERROR, 'sorpresa'),
+    (LISTO, 'contento'), (ORGULLO, 'contento'), (FIN_LARGO, 'contento'), (MIMO, 'contento'),
+    (MUSICA, 'contento'), (MUSICA_ARTISTA, 'contento'), (SESION, 'contento'), (VOLVISTE, 'contento'),
+    (CASI, 'contento'), (CON_VOZ, 'contento'), (PEDIDO, 'contento'), (MITAD, 'contento'),
+    *((lista, 'contento') for lista in MUSICA_GENERO.values()))}
+_animos_dichos: dict[str, str] = {}             # frase ya armada → ánimo (para que decir() lo encuentre)
 
 
 def _uno(lista, **kw) -> str:
     """Una frase al azar de la lista, sin repetir las últimas que ya dijo de esa misma lista
-    (y sin malas palabras si en la configuración no las quieren)."""
+    (y sin malas palabras si en la configuración no las quieren, ni frases con género si el trato es neutro)."""
     usadas = _recientes.setdefault(id(lista), deque(maxlen=max(1, len(lista) // 2)))
     permitidas = lista if PREFERENCIAS['groserias'] else ([f for f in lista if not GROSERAS.search(f)] or lista)
+    if PREFERENCIAS['neutro']:
+        permitidas = [f for f in permitidas if '{o}' not in f] or permitidas
     opciones = [f for f in permitidas if f not in usadas] or permitidas
     f = random.choice(opciones)
     usadas.append(f)
-    return f.format(**{**NOMBRE, **kw})
+    texto = f.format(**{**NOMBRE, **kw})
+    if id(lista) in ANIMO_LISTA:
+        _animos_dichos[texto] = ANIMO_LISTA[id(lista)]
+        while len(_animos_dichos) > 60:
+            _animos_dichos.pop(next(iter(_animos_dichos)))
+    return texto
+
+
+def animo_de(texto: str) -> str:
+    """El ánimo de una frase armada con _uno (si arranca con una, como «¡Listo! Y además…»)."""
+    for frase, animo in reversed(list(_animos_dichos.items())):
+        if texto.startswith(frase) or texto.endswith(frase):
+            return animo
+    return ''
 
 
 def _archivo(entrada: dict) -> str | None:
@@ -365,7 +485,7 @@ class Narrador(QObject):
         self.estado: dict[str, dict] = {}       # por sesión: ocupada, stop_t, ultimo
         self.hechas: deque = deque(maxlen=300)  # tool_use_id ya terminados
         self.ult_clave: dict[str, float] = {}
-        self.pendiente = None                   # (texto, sub, cuando)
+        self.pendiente = None                   # (texto, sub, cuando, importante, ánimo)
         self.libre_en = 0.0
         self.oculto = False
         self._actual = None                     # (sesión, nombre) del evento que se está narrando
@@ -379,6 +499,13 @@ class Narrador(QObject):
         self.prox_charla = time.monotonic() + random.uniform(900, 1800)
         self.afk = False
         self.libre_desde = None
+        self.respiro_hasta = 0.0                     # pausa para respirar entre una frase y la siguiente
+        self.en_compu_desde = None
+        self.ult_pausa = time.monotonic()
+        import fechas
+        self.fecha = fechas.datos('')
+        self.curiosidades: list[str] = []
+        self.prox_curiosidad = 0.0
         self._voz_termino.connect(self._despachar)
         voz.al_terminar = self._voz_termino.emit
         self._reloj = QTimer(self)
@@ -401,12 +528,63 @@ class Narrador(QObject):
         return primera_frase(texto, 280, cuantas=2)
 
     def _al_dia(self):
-        PREFERENCIAS['groserias'] = bool(self.cfg.get('groserias', True))
+        respeto = self.fecha['respeto'] and self.cfg.get('fechas_argentinas', True)
+        PREFERENCIAS['groserias'] = bool(self.cfg.get('groserias', True)) and not respeto
+        trato = TRATO.get(self.cfg.get('trato', 'masculino'), 'o')
+        PREFERENCIAS['neutro'] = not trato
         NOMBRE['n'] = self.cfg.get('nombre') or 'compa'
+        NOMBRE['o'] = trato or 'o'
+        NOMBRE['mate'] = BEBIDAS.get(self.cfg.get('bebida', 'mate'), 'un mate')
+
+    def _quejas(self) -> bool:
+        """Se queja de los proyectos largos (nunca en un día de memoria)."""
+        return self.cfg.get('quejas', True) and not (self.fecha['respeto'] and self.cfg.get('fechas_argentinas', True))
+
+    # ------------------------------------------------------------ fechas patrias y culturales
+    def nueva_fecha(self, datos: dict):
+        """Cambió el día: la fecha especial de hoy (fechas.datos) y sus curiosidades, sin repetir."""
+        self.fecha = datos
+        self.curiosidades = list(datos['curiosidades'])
+        random.shuffle(self.curiosidades)
+        self.prox_curiosidad = time.monotonic() + 75
+        self._al_dia()
+
+    def _curiosidad(self, ahora: float):
+        """De vez en cuando, en una fecha especial, cuenta algo de ese día (cuando no hay laburo)."""
+        if not (self.curiosidades and self.cfg.get('fechas_argentinas', True)) or ahora < self.prox_curiosidad:
+            return
+        if self.alguna_ocupada() or self.afk or self.escuchando or self.m.base != 'libre':
+            self.prox_curiosidad = ahora + 60
+            return
+        self.prox_curiosidad = ahora + random.uniform(2400, 4200)    # cada 40 a 70 minutos
+        if self._habla() == 'poco' and len(self.curiosidades) < len(self.fecha['curiosidades']):
+            return                                                   # hablando poco: una sola por día
+        texto = self.curiosidades.pop(0)
+        intro = '' if self.fecha['respeto'] else random.choice(['¿Sabías que…? ', 'Dato: ', 'Te cuento algo: ',
+                                                                 'Curiosidad del día: ', ''])
+        self.decir(intro + texto, clave='curiosidad', repetir=600, animo='triste' if self.fecha['respeto'] else '')
+
+    # ------------------------------------------------------------ pausas activas
+    def _pausa_activa(self, ahora: float):
+        """Si lo pediste en la configuración: cada tanto, estando en la compu, te recuerda estirarte o tomar agua."""
+        cada = int(self.cfg.get('pausas', 0) or 0) * 60
+        if self.afk:
+            self.en_compu_desde = None
+            return
+        if self.en_compu_desde is None:
+            self.en_compu_desde = ahora
+        if not cada or ahora - max(self.en_compu_desde, self.ult_pausa) < cada:
+            return
+        if self.escuchando or self.oculto:
+            return
+        self.ult_pausa = ahora
+        self.m.momento('saludar', 1.6)
+        self.decir(_uno(PAUSA, n=self.n), clave='pausa', repetir=600)
 
     # ------------------------------------------------------------ hablar
     def decir(self, texto: str, alta: bool = False, clave: str | None = None, repetir: float = 9.0,
-              sub: str | None = None, dur: float | None = None, importante: bool = False):
+              sub: str | None = None, dur: float | None = None, importante: bool = False,
+              animo: str | None = None, efecto: str = ''):
         if self.oculto or not texto:
             if texto:
                 log.info('callado (oculto): %s', texto[:60])
@@ -416,16 +594,20 @@ class Narrador(QObject):
             if ahora - self.ult_clave.get(clave, -1e9) < repetir:
                 return
             self.ult_clave[clave] = ahora
+        if animo is None:
+            animo = animo_de(texto)
+        if self.fecha['respeto'] and self.cfg.get('fechas_argentinas', True) and animo == 'contento':
+            animo = ''                          # día de memoria: sin festejos
         if self._actual:
             texto = self._con_proyecto(texto, *self._actual)
         if (alta and not self.escuchando) or not self._ocupado(ahora):
-            self._emitir(texto, sub, alta, dur)
-        elif importante or not (self.pendiente and len(self.pendiente) > 3 and ahora - self.pendiente[2] < 15):
+            self._emitir(texto, sub, alta, dur, animo, efecto)
+        elif importante or not (self.pendiente and self.pendiente[3] and ahora - self.pendiente[2] < 15):
             # una explicación de Claude no la pisa una frase genérica de herramienta
-            self.pendiente = (texto, sub, ahora, True) if importante else (texto, sub, ahora)
+            self.pendiente = (texto, sub, ahora, importante, animo)
 
     def _ocupado(self, ahora: float) -> bool:
-        return (self.escuchando or ahora < self.libre_en
+        return (self.escuchando or ahora < self.libre_en or ahora < self.respiro_hasta
                 or (not self.cfg['silencio'] and self.voz.hablando))
 
     def dictado(self, si: bool):
@@ -435,26 +617,28 @@ class Narrador(QObject):
             self.voz.callar()
             self.m.globo.cerrar()
 
-    def _emitir(self, texto, sub, alta, dur=None):
+    def _emitir(self, texto, sub, alta, dur=None, animo='', efecto=''):
         self.pendiente = None if alta else self.pendiente
         estimado = 0.9 + len(texto) * 0.062
         self.libre_en = time.monotonic() + (estimado + 0.5 if self.cfg['silencio'] else 0.7)
         self.m.globo.mostrar(texto, sub, dur if dur else max(2.8, estimado + 1.4))
         log.info('dice (%s, voz %s): %s', 'mudo' if self.cfg['silencio'] else 'con voz', self.voz.estado, texto[:80])
         if not self.cfg['silencio'] and self.voz.estado == 'lista':
-            self.voz.decir(texto, cortar=alta)
+            self.voz.decir(texto, cortar=alta, animo=animo, efecto=efecto)
 
     def _despachar(self):
-        self._revisar()
+        """Terminó de hablar: respira un poquito antes de la frase siguiente (si no, parece una metralleta)."""
+        respiro = float(self.cfg.get('respiro', 0.7))
+        self.respiro_hasta = time.monotonic() + respiro
+        QTimer.singleShot(int(respiro * 1000) + 30, self._revisar)
 
     def _revisar(self):
         ahora = time.monotonic()
         if self.pendiente and not self._ocupado(ahora):
-            texto, sub, cuando = self.pendiente[:3]
-            vence = 15 if len(self.pendiente) > 3 else 7
+            texto, sub, cuando, importante, animo = self.pendiente
             self.pendiente = None
-            if ahora - cuando < vence:
-                self._emitir(texto, sub, False)
+            if ahora - cuando < (15 if importante else 7):
+                self._emitir(texto, sub, False, animo=animo)
         # charla de vez en cuando, si no hay nada que hacer y estás en la compu
         if ahora >= self.prox_charla:
             self.prox_charla = ahora + random.uniform(1200, 2400)
@@ -465,6 +649,9 @@ class Narrador(QObject):
                 if h < 6:
                     self.decir(_uno(MADRUGADA, n=self.n, h=datetime.now().strftime('%H:%M')),
                                clave='madrugada', repetir=10800)
+                elif self.cfg.get('chistes', True) and not self.fecha['respeto'] and random.random() < 0.45:
+                    self.m.paseo, self.m.paseo_fin = 'guino', time.monotonic() + 1.2    # guiñito
+                    self.decir(_uno(CHISTES, n=self.n), clave='charla', repetir=600, animo='contento')
                 else:
                     self.decir(_uno(CHARLA, n=self.n), clave='charla', repetir=600)
         # muy de vez en cuando, si lleva media hora al pedo y vos estás en la compu, te pide laburo
@@ -477,6 +664,8 @@ class Narrador(QObject):
             if ahora - self.ult_clave.get('aburrido', -1e9) > 5400:
                 self.m.momento('saludar', 1.6)
                 self.decir(_uno(ABURRIDO, n=self.n), clave='aburrido', repetir=5400)
+        self._curiosidad(ahora)
+        self._pausa_activa(ahora)
         # sesiones que quedaron «ocupadas» sin eventos (por si se perdió un Stop)
         for sid, s in list(self.estado.items()):
             if s['ocupada'] and ahora - s['ultimo'] > 900:
@@ -625,7 +814,8 @@ class Narrador(QObject):
                     if not texto and d.get('transcript_path') and self.cfg.get('resumen_final', True):
                         texto = ultimo_mensaje_del_transcript(d['transcript_path'])
                     frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
-                    self.decir(f'{_uno(FIN_LARGO, n=n)} {frase}'.strip(), alta=True, sub=sub, dur=10)
+                    self.decir(f'{_uno(FIN_LARGO, n=n)} {frase}'.strip(), alta=True, sub=sub, dur=10,
+                               animo='contento', efecto='fiesta')
                     return
                 self.m.momento('orgulloso' if largo else 'festejar', 2.8 if largo else 2.4)
                 texto = d.get('last_assistant_message') or ''
@@ -635,7 +825,10 @@ class Narrador(QObject):
                 # si la respuesta ya arranca con «Listo…», no lo decimos dos veces
                 listo = '' if re.match(r'(¡\s*)?(listo|ya está|terminé|hecho)\b', frase, re.I) \
                     else _uno(ORGULLO if largo else LISTO)
-                self.decir(f'{listo} {frase}'.strip(), alta=True, sub=sub)
+                # festeja con un grito («¡Sí!», «¡Golazo!») y, si hay confeti, se escucha
+                grito = _uno(GRITO) + ' ' if (largo or random.random() < 0.4) and not self.fecha['respeto'] else ''
+                self.decir(f'{grito}{listo} {frase}'.strip(), alta=True, sub=sub, animo='contento',
+                           efecto='confeti')        # siempre que tira confeti, se escucha
             elif tipo == 'SubagentStart':
                 self.m.ayudante(+1)
             elif tipo == 'SubagentStop':
@@ -704,7 +897,7 @@ class Narrador(QObject):
                 frase, clave = largo, 'tardar'
                 self.para_despues.pop(tid, None)
             # con los años que lleva laburando, se le nota el humor
-            humor = None if alta or importante or not self.cfg.get('quejas', True) else self._humor(s, ahora)
+            humor = None if alta or importante or not self._quejas() else self._humor(s, ahora)
             if humor:
                 frase, clave = humor, None
             casi = self._avance(d.get('tool_name') or '', d.get('tool_input') or {})
@@ -764,6 +957,8 @@ class Narrador(QObject):
 
     def _uso(self, d: dict):
         """Datos de la statusLine: avisa al cruzar ciertos % del límite de 5 horas."""
+        if not self.cfg.get('avisos_uso', True):
+            return
         cinco = ((d.get('rate_limits') or {}).get('five_hour') or {})
         pct = cinco.get('used_percentage')
         if pct is not None:
@@ -828,6 +1023,8 @@ class Narrador(QObject):
 
     def _contexto_del_transcript(self, sid: str, ruta: str, nombre: str):
         """Sin statusLine: calcula el contexto con el uso del último mensaje de Claude."""
+        if not self.cfg.get('avisos_uso', True):
+            return
         usado = tokens_del_transcript(ruta)
         if usado:
             self._contexto(sid, 100 * usado / self.cfg.get('ventana_contexto', 1_000_000), nombre)
@@ -935,6 +1132,12 @@ class Narrador(QObject):
 
     # ------------------------------------------------------------ cosas propias
     def saludo_app(self):
+        self._al_dia()
+        if self.fecha['saludo'] and self.cfg.get('fechas_argentinas', True):
+            # fecha patria o cultural: saluda por el día (el Día de la Bandera, encima, la iza)
+            self.decir(self.fecha['saludo'].format(**NOMBRE), alta=True,
+                       animo='triste' if self.fecha['respeto'] else 'contento')
+            return
         h = datetime.now().hour
         if h < 6:
             frase = f'¡Hola, {self.n}! ¿Otra vez de madrugada? Dale, arrancamos.'
@@ -947,19 +1150,22 @@ class Narrador(QObject):
         self.decir(frase, alta=True)
 
     def chau(self):
-        self.decir(_uno(CHAU, n=self.n), alta=True)
+        self.decir(_uno(CHAU, n=self.n), alta=True, animo='contento')
 
     def mimado(self):
         self.decir(_uno(MIMO, n=self.n), clave='mimo', repetir=15)
 
-    def tema_nuevo(self, titulo: str):
-        """Cambió el tema en Spotify: de vez en cuando lo festeja (no todos, y sin pisar lo de Claude)."""
+    def tema_nuevo(self, titulo: str, genero: str = ''):
+        """Cambió el tema en Spotify: de vez en cuando lo festeja (no todos, y sin pisar lo de Claude).
+        Si es de un género argentino que conoce (o phonk), lo comenta a su manera."""
         if not self.cfg.get('comentar_musica', True) or self.escuchando or self.oculto:
             return
         if time.monotonic() - self.ult_clave.get('musica', -1e9) < 480 or random.random() > 0.35:
             return
         artista = titulo.split(' - ', 1)[0].strip()
-        if artista and len(artista) <= 30 and random.random() < 0.3:
+        if genero in MUSICA_GENERO and random.random() < 0.6:
+            frase = _uno(MUSICA_GENERO[genero], n=self.n)
+        elif artista and len(artista) <= 30 and random.random() < 0.3:
             frase = _uno(MUSICA_ARTISTA, a=artista, n=self.n)
         else:
             frase = _uno(MUSICA, n=self.n)
@@ -972,12 +1178,15 @@ class Narrador(QObject):
         self.decir(_uno(CON_VOZ), alta=True)
 
     @staticmethod
-    def frases_fijas(nombre: str) -> list[str]:
-        """Para precalentar la voz: todo lo que no depende de nombres de archivo."""
+    def frases_fijas(nombre: str, cfg=None) -> list[str]:
+        """Para precalentar la voz: todo lo que no depende de nombres de archivo (las más usadas primero)."""
+        cfg = cfg or {}
+        marcas = {'n': nombre, 'o': TRATO.get(cfg.get('trato', 'masculino')) or 'o',
+                  'mate': BEBIDAS.get(cfg.get('bebida', 'mate'), 'un mate')}
         out = []
-        for lista in (PEDIDO, LEER_SIN, BUSCAR, COMANDO, WEB_BUSCAR, WEB_LEER, NAVEGADOR, UNITY, AYUDANTE,
-                      PAGINA, SKILL, PLAN, PLAN_LISTO, PREGUNTA, PERMISO, ESPERA, ELEGIR, ERROR, MIMO,
-                      VOLVISTE, SESION, RESUMIR, CON_VOZ, CHAU, FRUSTRADO, LISTO, TARDA, VA_TARDAR_SIN,
-                      CANSADO, PAJA, HARTO, CASI, MITAD, FIN_LARGO, TARDA_MUCHO, ABURRIDO, MUSICA):
-            out += [f.format(n=nombre) for f in lista]
+        for lista in (PEDIDO, LISTO, PERMISO, PREGUNTA, ERROR, LEER_SIN, BUSCAR, COMANDO, WEB_BUSCAR, WEB_LEER,
+                      NAVEGADOR, AYUDANTE, PAGINA, SKILL, PLAN, PLAN_LISTO, ESPERA, ELEGIR, MIMO,
+                      VOLVISTE, SESION, RESUMIR, CON_VOZ, CHAU, FRUSTRADO, TARDA, VA_TARDAR_SIN, ORGULLO,
+                      CANSADO, PAJA, HARTO, CASI, MITAD, FIN_LARGO, TARDA_MUCHO, ABURRIDO, MUSICA, UNITY):
+            out += [f.format(**marcas) for f in lista]
         return out
