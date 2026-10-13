@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #
 # Instalador para Linux: se corre desde la carpeta descomprimida (./instalar.sh).
 #   --si    acepta todo lo recomendado sin preguntar (para instalaciones automáticas)
@@ -52,7 +52,7 @@ pie; seguir
 
 # ── 2. Licencia ───────────────────────────────────────────────
 cabecera "· licencia"
-echo "  El Cangrejito es libre: licencia MIT (podés usarlo, cambiarlo y compartirlo, nombrando a su autor)."
+echo "  El Cangrejito es de uso libre y no comercial (licencia PolyForm Noncommercial): podés usarlo, cambiarlo y compartirlo, pero no venderlo ni usarlo para un negocio."
 echo "  La voz «Daniela» (Piper) se baja aparte la primera vez y tiene licencia CC BY-SA 4.0."
 echo "  Proyecto de fan, no oficial: no está afiliado a Anthropic."
 pie

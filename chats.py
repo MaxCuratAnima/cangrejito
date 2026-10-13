@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Los chats normales de Claude (los que no son de Claude Code): no mandan avisos, así que el cangrejito
 los lee de la ventana de la app con la accesibilidad de Windows (UI Automation), igual que un lector de
 pantalla. Solo lee la última respuesta que se ve; no escribe, no hace clic y no manda nada a ningún lado.

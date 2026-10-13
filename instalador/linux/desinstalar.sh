@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #
 # Desinstala el Cangrejito en Linux: saca los hooks de Claude Code, el autoarranque y el programa.
 # Tus ajustes quedan en ~/.local/share/cangrejito, por si lo volvés a instalar.

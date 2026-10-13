@@ -14,3 +14,5 @@
 Requisitos: Claude Code (la app de escritorio de Claude en Windows, o la terminal). La primera vez baja la voz (unos 110 MB).
 
 Hecho por MaxCurat.
+
+**Licencia:** desde la 1.4.0 el código pasa a PolyForm Noncommercial 1.0.0: uso libre y gratis, pero no comercial.

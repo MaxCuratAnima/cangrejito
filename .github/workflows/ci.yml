@@ -1,4 +1,4 @@
-# Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
+# Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 # En cada cambio: pruebas en Windows y en Linux.
 # En cada versión (etiqueta vX.Y.Z): arma el instalador de Windows y el paquete de Linux, prueba
 # instalarlos y los adjunta a la página de la versión.

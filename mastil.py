@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """El mástil del Día de la Bandera: una ventanita aparte, plantada en el piso al lado del cangrejito.
 
 Se queda quieto, pero lo podés agarrar con el mouse y llevarlo a otro lado (cae al piso, como el

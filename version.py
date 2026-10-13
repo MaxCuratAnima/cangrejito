@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Versión y autoría (lo usan el menú «Acerca de», el .exe y el instalador)."""
 
 NOMBRE = 'Cangrejito'
@@ -12,4 +12,4 @@ AUTORIA = ('Lo hizo MaxCurat para tener un compañero virtual: que lo acompañe,
            'de Claude, pero es un proyecto aparte.')
 COPYRIGHT = 'Copyright (c) 2026 MaxCurat'
 REPO = 'https://github.com/MaxCuratAnima/cangrejito'
-LICENCIA = 'MIT'
+LICENCIA = 'PolyForm Noncommercial 1.0.0'

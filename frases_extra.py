@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Más frases rioplatenses para el narrador: se suman (sin repetir) a las listas del mismo nombre de narrador.py.
 Reglas: buena onda, nada ofensivo ni político, nunca «jefe»; las marcas son las de narrador.py
 ({n} nombre, {mate} la bebida, {f} archivo, {p} proyecto). Una frase con {o} no se usa con trato neutro: acá no hay."""

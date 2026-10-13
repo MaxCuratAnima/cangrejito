@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Cómo salió una tarea, según lo que escribió Claude al final: 'ok', 'casi' (bastante bien, no perfecto),
 'regular' (a medias) o 'mal' (falló). Solo mira el texto y si lo último que hizo fue un error: si no hay
 pistas claras, es 'ok' (mejor festejar de más que sacarle el gusto a algo que salió bien)."""

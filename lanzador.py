@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Lanzador del cangrejito: arranca con la sesión, pesa unos pocos MB y cada 3 segundos se fija si
 abriste Claude. Cuando lo abrís, abre el cangrejito; cuando lo cerrás, el cangrejito se despide y se
 cierra solo (con su voz y todo), así no ocupa memoria mientras no usás Claude.

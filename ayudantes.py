@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Los cangrejitos ayudantes: uno por cada agente que Claude manda a laburar.
 
 El primero se sube a la cabeza del cangrejito, con casquito de obra y una tablita. Los demás caen desde arriba, andan de

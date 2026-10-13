@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Lo que el vigilante necesita saber del sistema, versión Windows (API de Win32 con ctypes).
 
 La misma interfaz está en sistema_linux.py; vigilante.py usa la que corresponde.

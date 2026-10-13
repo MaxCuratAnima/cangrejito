@@ -262,14 +262,17 @@ La voz XTTS (más natural, con placa de video) es opcional y no viene en los ins
 - **Lenguaje:** Python 3, con PySide6 (Qt) para la ventana y el dibujo pixel por pixel.
 - **Voz:** Piper con la voz «Daniela» en español argentino. Corre en tu PC, sin internet. No viene en este repositorio: se baja una vez al abrirlo por primera vez.
 - **Instaladores:** PyInstaller + Inno Setup para Windows, y un `.tar.gz` con `instalar.sh` para Linux, armados por GitHub Actions.
-- **Código abierto:** con licencia MIT. Podés usarlo, cambiarlo y compartirlo, siempre que dejes el aviso de autoría.
+- **Código a la vista, uso no comercial:** licencia PolyForm Noncommercial. Podés bajarlo, usarlo, estudiarlo, cambiarlo y compartirlo gratis; no se puede vender ni usar para un negocio.
 
 ---
 
 ## Créditos y licencia
 
-**Cangrejito** lo hizo **MaxCurat** (© 2026). El código es libre, con [licencia MIT](LICENSE): podés usarlo,
-cambiarlo y compartirlo, siempre que mantengas el aviso de autoría.
+**Cangrejito** lo hizo **MaxCurat** (© 2026). El código está a la vista bajo la licencia
+[PolyForm Noncommercial 1.0.0](LICENSE): es gratis para uso personal, de estudio y sin fines de lucro, pero
+**no se puede usar con fines comerciales** (venderlo, meterlo en un producto o servicio pago, usarlo para un
+negocio). Si querés usarlo comercialmente, escribime por un [issue](https://github.com/MaxCuratAnima/cangrejito/issues)
+y lo hablamos. Ojo: por eso no es «código abierto» en el sentido estricto; es código visible con uso libre no comercial.
 
 - **Voz «Daniela»** ([Piper](https://github.com/rhasspy/piper), es_AR): licencia CC BY-SA 4.0, dataset
   [OpenSLR 61](https://www.openslr.org/61/), entrenada por [larcanio](https://huggingface.co/larcanio/piper-voices).

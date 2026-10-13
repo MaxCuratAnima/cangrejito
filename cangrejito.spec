@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 # Receta de PyInstaller para Cangrejito.exe (una carpeta con el programa y sus librerías).
 #   python -m PyInstaller cangrejito.spec --noconfirm
 # Sale en dist\Cangrejito\. El instalador (instalador\cangrejito.iss) empaqueta esa carpeta.

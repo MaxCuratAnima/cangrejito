@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Graba muestras de la voz (cada ánimo, el respiro en textos largos y el confeti) en .wav, para escucharlas.
 
     python dev/muestras_voz.py CARPETA_DE_SALIDA [RUTA_DE_LA_VOZ.onnx]

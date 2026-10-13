@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Servidor de voz XTTS-v2 en español argentino (modelo de la UNRN, afinado con grabaciones argentinas).
 
 Es opcional: corre aparte, con su propio Python (un entorno con coqui-tts y PyTorch, el de

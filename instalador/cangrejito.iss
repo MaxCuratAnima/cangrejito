@@ -3,7 +3,7 @@
 ;   2) ISCC instalador\cangrejito.iss [/DDist=<carpeta de dist\Cangrejito>]
 ; Sale en instalador\salida\CangrejitoSetup.exe
 
-; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
+; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #define Version "1.4.0"
 #ifndef Dist
   #define Dist "..\dist\Cangrejito"
@@ -49,7 +49,7 @@ WelcomeLabel2=Esto instala [name/ver] en tu computadora.%n%nEl cangrejito es una
 ClickNext=Tocá «Siguiente» para seguir o «Cancelar» para salir.
 WizardLicense=Licencia
 LicenseLabel=Leé esto antes de seguir.
-LicenseLabel3=El Cangrejito es libre (licencia MIT). Para seguir, tenés que aceptar la licencia.
+LicenseLabel3=El Cangrejito es de uso libre y no comercial (licencia PolyForm Noncommercial). Para seguir, tenés que aceptar la licencia.
 LicenseAccepted=&Acepto la licencia
 LicenseNotAccepted=&No la acepto
 WizardSelectTasks=Opciones

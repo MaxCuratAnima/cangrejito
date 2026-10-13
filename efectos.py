@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Efectos de sonido hechos con código (sin archivos, sin licencias): el confeti cuando festeja.
 
   confeti   un «pop» de cotillón, la cornetita de cumpleaños y los papelitos cayendo

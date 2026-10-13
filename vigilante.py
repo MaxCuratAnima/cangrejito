@@ -1,6 +1,6 @@
 # Cangrejito — mascota de escritorio que narra lo que hace Claude Code.
 # Copyright (c) 2026 MaxCurat (https://github.com/MaxCuratAnima/cangrejito)
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 """Mira la PC cada 2 segundos: si la app de Claude está abierta, si estás AFK, qué monitores
 tienen algo en pantalla completa (un juego o un video), si le estás dictando a Claude,
 si suena Spotify y qué sesiones de Claude Code están activas."""
