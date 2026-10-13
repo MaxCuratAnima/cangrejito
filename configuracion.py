@@ -35,7 +35,12 @@ GENEROS = [('folklore', 'Folklore: gaucho con la guitarra criolla'),
            ('cumbia', 'Cumbia: gorrita, camiseta albiceleste y teclado'),
            ('rock', 'Rock nacional: campera de cuero, lentes y eléctrica'),
            ('trap', 'Trap: gorra, cadena, lentes y micrófono'),
-           ('funk', 'Funk y phonk: el Camaro blanco con lentes')]
+           ('funk', 'Funk y phonk: el Camaro blanco con lentes'),
+           ('electronica', 'Electrónica (Daft Punk): casco de robot y baile a tirones'),
+           ('disco', 'Disco: bola de espejos y pose de Travolta'),
+           ('reggae', 'Reggae: gorro rasta y meneo relajado'),
+           ('metal', 'Metal: melena larga y cabeceo'),
+           ('clasica', 'Clásica: peluca blanca y dirige la orquesta')]
 # los mismos valores, para el menú del clic derecho (más cortos)
 HABLA_MENU = [('poco', 'Poco (solo lo importante)'), ('normal', 'Normal (cada paso)'),
               ('mucho', 'Mucho (y comentarios sueltos)')]
@@ -129,11 +134,13 @@ class Configuracion(QDialog):
         self.quejas.setChecked(bool(cfg.get('quejas', True)))
         self.avisos = QCheckBox('Avisa del límite de 5 horas y de cuándo conviene compactar el chat')
         self.avisos.setChecked(bool(cfg.get('avisos_uso', True)))
+        self.chats = QCheckBox('Comenta también los chats normales de Claude (no solo Claude Code)')
+        self.chats.setChecked(bool(cfg.get('chats_normales', False)))
         self.juego = QCheckBox('Cuando jugás en el otro monitor, juega con vos, come pochoclos y te alienta')
         self.juego.setChecked(bool(cfg.get('actividades_juego', True)))
         self.chistes = QCheckBox('Cada tanto, en los ratos libres, tira un chiste (con «Cuánto habla: mucho»)')
         self.chistes.setChecked(bool(cfg.get('chistes', True)))
-        for c in (self.groserias, self.quejas, self.chistes, self.avisos, self.juego):
+        for c in (self.groserias, self.quejas, self.chistes, self.chats, self.avisos, self.juego):
             v2.addWidget(c)
         pestanas.addTab(_pestana(g1, g2), 'Cómo habla')
 
@@ -227,6 +234,7 @@ class Configuracion(QDialog):
         c['groserias'] = self.groserias.isChecked()
         c['quejas'] = self.quejas.isChecked()
         c['avisos_uso'] = self.avisos.isChecked()
+        c['chats_normales'] = self.chats.isChecked()
         c['chistes'] = self.chistes.isChecked()
         c['actividades_juego'] = self.juego.isChecked()
         c['comentar_musica'] = self.musica.isChecked()

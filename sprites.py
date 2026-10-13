@@ -229,6 +229,10 @@ NOMBRES_BANDERAS = [('argentina', 'Argentina'), ('uruguay', 'Uruguay'), ('chile'
                     ('orgullo', 'Orgullo (arcoíris)')]
 # partículas (se dibujan fuera de la grilla, con posición libre)
 NOTA = ['..yy', '..y.', '..y.', 'yyy.', 'yy..']
+BURBUJA = ['.cc.', 'c..c', 'c..c', '.cc.']                       # pompa de jabón
+PELOTAS = (['.x.', 'xxx', '.x.'], ['.y.', 'yyy', '.y.'], ['.C.', 'CCC', '.C.'])   # para los malabares
+MOSCA = ['w.w', '.k.', '.k.']
+GOTA = ['c']
 Z_GRANDE = ['yyyy', '..y.', '.y..', 'yyyy']
 Z_CHICA = ['yyy', '.y.', 'yyy']
 CORAZON = ['.r.r.', 'rrrrr', 'rrrrr', '.rrr.', '..r..']
@@ -284,6 +288,7 @@ class Pose:
     bebida: str = 'mate'       # mate, cafe, te o ruda (qué toma mientras labura)
     bandera: str = 'argentina'  # la de la hinchada
     fuelle: int = 4            # cuánto está abierto el bandoneón
+    escala_x: float = 1.0      # <1: de canto, achatado (la vueltita de la chacarera)
 
 
 def _brazo(nombre: str, f: int, lado: int):
@@ -494,6 +499,12 @@ def dibujar(pose: Pose) -> QImage:
     elif pose.boca_forma:
         spr(BOCAS[pose.boca_forma], 15, 23 + dt)
 
+    # --- casco de robot (Daft Punk): tapa la cara, visor negro con luces
+    for nombre, col in (('casco_plata', 's'), ('casco_oro', 'Y')):
+        a = acc.get(nombre, 0)
+        if a > 0.01:
+            _casco(p, bx, by, bw, dt, pose.t, a, col)
+
     # --- cosas delante del cuerpo
     a = acc.get('libro', 0)
     if a > 0.01:
@@ -637,11 +648,73 @@ def dibujar(pose: Pose) -> QImage:
     a = acc.get('sudor', 0)
     if a > 0.01:
         spr(SUDOR, 25, 14 + dt + int(pose.t * 3) % 3, a)
+    a = acc.get('panuelo_baile', 0)
+    if a > 0.01:
+        _panuelo(p, 26, 6 + dt, pose.t, a)
+    a = acc.get('bola_disco', 0)
+    if a > 0.01:
+        _bola_disco(p, bx + bw // 2 - 3, by - 13, pose.t, a)
     if a_auto > 0.01 and not pose.auto_atras:
         p.resetTransform()
         _dibujar_auto(p, pose, a_auto)
     p.end()
+    if pose.escala_x < 0.99:
+        ancho = max(2, round(W * pose.escala_x))
+        fino = cang.scaled(ancho, H, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation)
+        cang = QImage(W, H, QImage.Format.Format_ARGB32_Premultiplied)
+        cang.fill(0)
+        q = QPainter(cang)
+        q.drawImage((W - ancho) // 2, 0, fino)
+        q.end()
     return _con_contorno(cang)
+
+
+def _casco(p: QPainter, bx: int, by: int, bw: int, dt: int, t: float, a: float, col: str):
+    """Casco de robot: carcasa metálica, visor negro con tiras de luces que cambian y rejilla abajo."""
+    p.setOpacity(a)
+
+    def r(x, y, w, h, c):
+        p.fillRect(x, y, w, h, PALETA[c])
+    for k, ins in enumerate((2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)):      # carcasa redondeada
+        r(bx - 1 + ins, 15 + dt + k, bw + 2 - 2 * ins, 1, col)
+    r(bx + 2, 15 + dt, bw - 4, 1, 'w')               # brillo de arriba
+    r(bx, 25 + dt, bw, 1, 'G')                       # sombra de abajo
+    for k, ins in enumerate((1, 0, 0, 0, 1)):        # visor
+        r(bx + 1 + ins, 17 + dt + k, bw - 2 - 2 * ins, 1, 'K')
+    luces = 'rynCv'
+    for i in range(2):                               # tiras de luces que corren
+        r(bx + 2, 18 + dt + i * 2, bw - 4, 1, luces[(int(t * 5) + i * 2) % 5])
+    for k in range(3):                               # rejilla de la boca
+        r(bx + 4 + k * 3, 23 + dt, 2, 2, 'G')
+    r(bx - 2, 18 + dt, 1, 4, 'G')                    # orejeras
+    r(bx + bw + 1, 18 + dt, 1, 4, 'G')
+    p.setOpacity(1.0)
+
+
+def _panuelo(p: QPainter, x0: int, y0: int, t: float, a: float):
+    """Pañuelo celeste y blanco que flamea (la vueltita de chacarera): ocho columnas con ondas."""
+    p.setOpacity(a)
+    for i in range(8):
+        dy = round(math.sin(t * 12 - i * 0.9) * (1 + i * 0.25))
+        for j, col in enumerate('CCwwCC'):
+            p.fillRect(x0 + i, y0 + j + dy + i // 3, 1, 1, PALETA[col])
+    p.setOpacity(1.0)
+
+
+def _bola_disco(p: QPainter, x0: int, y0: int, t: float, a: float):
+    """Bola de espejos colgada arriba de la cabeza, con reflejos de colores que giran."""
+    p.setOpacity(a)
+    p.fillRect(x0 + 2, y0 - 4, 1, 4, PALETA['G'])    # el hilo
+    forma = ((1, 0, 4), (0, 1, 6), (0, 2, 6), (0, 3, 6), (0, 4, 6), (1, 5, 4))
+    g = int(t * 6)
+    for fila, (dx, y, n) in enumerate(forma):
+        for i in range(n):
+            p.fillRect(x0 + dx + i, y0 + y, 1, 1, PALETA['wsgw'[(i + fila + g) % 4]])
+    for k in range(5):                               # destellos alrededor
+        ang = t * 2.5 + k * 1.256
+        x, y = x0 + 3 + round(math.cos(ang) * 8), y0 + 3 + round(math.sin(ang) * 6)
+        p.fillRect(x, y, 1, 1, PALETA['yfCvr'[k]])
+    p.setOpacity(1.0)
 
 
 def _dibujar_auto(p: QPainter, pose: Pose, a: float):
@@ -728,7 +801,8 @@ def _bandoneon(p: QPainter, cx: int, y0: int, fuelle: int, a: float):
     p.setOpacity(1.0)
 
 
-SOMBREROS = ('gaucho', 'galera', 'bicornio', 'funyi', 'gorrita', 'gorra', 'gorro_navidad')
+SOMBREROS = ('gaucho', 'galera', 'bicornio', 'funyi', 'gorrita', 'gorra', 'gorro_navidad',
+             'gorro_rasta', 'peluca', 'melena')
 
 
 def _sombrero(p: QPainter, acc: dict, bx: int, by: int, bw: int):
@@ -774,6 +848,27 @@ def _sombrero(p: QPainter, acc: dict, bx: int, by: int, bw: int):
         r(bx + 4, by - 3, bw - 8, 3, 'K')
         r(bx + 3, by - 1, bw - 6, 1, 'K')
         r(medio - 1, by - 2, 2, 1, 'Y')
+    elif k == 'gorro_rasta':                # gorro tejido rojo-amarillo-verde con rastas a los costados
+        for i, col in enumerate('nyx'):
+            r(bx + 2, by - 6 + i * 2, bw - 4, 2, col)
+        r(bx + 1, by - 1, bw - 2, 1, 'K')
+        for lado in (bx - 1, bx + bw - 1):
+            r(lado, by, 2, 7, 'm')
+            r(lado, by + 2, 2, 1, 'L')
+            r(lado, by + 5, 2, 1, 'L')
+    elif k == 'peluca':                     # peluca blanca de director de orquesta, con rulos
+        r(bx + 1, by - 3, bw - 2, 3, 'w')
+        for lado in (bx - 1, bx + bw - 2):
+            r(lado, by - 1, 3, 5, 'w')
+            r(lado + 1, by + 1, 1, 1, 'g')
+            r(lado + 1, by + 3, 1, 1, 'g')
+        r(bx + 3, by - 2, 1, 1, 'g')
+        r(bx + bw - 4, by - 2, 1, 1, 'g')
+    elif k == 'melena':                     # pelo largo de metalero, cae por los costados
+        r(bx + 1, by - 3, bw - 2, 3, 'K')
+        r(bx - 1, by - 1, 3, 10, 'K')
+        r(bx + bw - 2, by - 1, 3, 10, 'K')
+        r(bx, by + 4, 1, 1, 'G')
     elif k == 'gorro_navidad':              # gorro de Papá Noel con pompón
         r(bx + 2, by - 1, bw - 4, 1, 'w')
         r(bx + 4, by - 3, bw - 8, 2, 'x')

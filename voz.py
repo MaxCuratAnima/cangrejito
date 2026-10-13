@@ -29,6 +29,7 @@ import time
 import wave
 from pathlib import Path
 
+PRECALENTAR_MAX = 120      # cuántas frases fijas se sintetizan de antemano (más gastaba procesador de más)
 import numpy as np
 
 log = logging.getLogger('cangrejito.voz')
@@ -223,7 +224,7 @@ class Voz:
 
     def precalentar(self, frases):
         """Sintetiza de antemano las frases fijas, de a una y solo cuando no hay nada que decir."""
-        self._precalentar = list(frases)
+        self._precalentar = list(frases)[:PRECALENTAR_MAX]       # las más usadas; el resto se dice cuando toca
 
     # ------------------------------------------------------------ XTTS (proceso aparte)
     def iniciar_xtts(self):
@@ -317,9 +318,9 @@ class Voz:
             import onnxruntime
             from piper import PiperVoice
             from piper.config import PiperConfig
-            # 4 hilos como mucho: con todos los núcleos la voz calienta la PC al pedo
+            # 3 hilos como mucho: con todos los núcleos la voz calienta la PC al pedo
             opciones = onnxruntime.SessionOptions()
-            opciones.intra_op_num_threads = 4
+            opciones.intra_op_num_threads = 3
             opciones.inter_op_num_threads = 1
             config = json.loads(Path(f'{self.modelo}.json').read_text(encoding='utf-8'))
             self.voz = PiperVoice(config=PiperConfig.from_dict(config),
@@ -399,7 +400,7 @@ class Voz:
                         self._sintetizar(self._precalentar.pop(0))
                     except Exception:
                         pass
-                    time.sleep(0.4)          # de a poco, sin acaparar nada
+                    time.sleep(1.0)          # de a poco, sin acaparar nada (la PC sigue fluida)
                 continue
             if gen != self._gen or self.voz is None:
                 continue

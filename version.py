@@ -4,8 +4,12 @@
 """Versión y autoría (lo usan el menú «Acerca de», el .exe y el instalador)."""
 
 NOMBRE = 'Cangrejito'
-VERSION = '1.3.0'
+VERSION = '1.4.0'
 AUTOR = 'MaxCurat'
+AUTORIA = ('Lo hizo MaxCurat para tener un compañero virtual: que lo acompañe, sea interactivo con Claude y le vaya '
+           'comentando lo que hace en los chats y en los proyectos. Así no hace falta estar pendiente de la app: se puede '
+           'jugar o hacer otras cosas mientras Claude labura de fondo. Hecho 100 % en Argentina. Inspirado en el cangrejito '
+           'de Claude, pero es un proyecto aparte.')
 COPYRIGHT = 'Copyright (c) 2026 MaxCurat'
 REPO = 'https://github.com/MaxCuratAnima/cangrejito'
 LICENCIA = 'MIT'

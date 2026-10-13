@@ -170,7 +170,7 @@ def main():
         try:
             pids = pids_app_claude()
             quiere = bool(pids) or bool(_config().get('siempre_visible'))
-            if (quiere and not apagado_por_vos(pids or {0}) and time.monotonic() - ultimo > 20
+            if (quiere and not apagado_por_vos(pids or {0}) and time.monotonic() - ultimo > 75
                     and not cangrejo_andando()):
                 ultimo = time.monotonic()
                 lanzar(comando_cangrejo())

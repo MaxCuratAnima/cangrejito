@@ -17,11 +17,34 @@ def test_todas_las_poses_se_dibujan(app):
 
 def test_paseos_libres_se_dibujan(mascota):
     for paseo in ('joystick', 'pochoclos', 'hinchada', 'mate', 'celular', 'auriculares', 'guitarra', 'auto',
-                  'bandoneon', 'cuarteto', 'cumbia', 'rock', 'trap', 'noquis', 'izar', 'saludo_bandera'):
+                  'bandoneon', 'cuarteto', 'cumbia', 'rock', 'trap', 'noquis', 'izar', 'saludo_bandera',
+                  'chacarera', 'robot', 'disco', 'reggae', 'metal', 'director',
+                  'malabares', 'burbujas', 'sentadillas', 'estornudo', 'mosca', 'estirarse'):
         mascota.paseo = paseo
         for t in (0.1, 2.5, 6.5, 19.0):
             mascota.t0 = time.monotonic() - t
             S.dibujar(mascota._pose(time.monotonic()))
+
+
+def test_cosquillas_y_mirada_larga(mascota):
+    visto = []
+    mascota.cosquillas.connect(lambda: visto.append('cosquillas'))
+    mascota.observado.connect(lambda: visto.append('observado'))
+    ahora = time.monotonic()
+    for k in range(3):
+        mascota._mimar(ahora + k)
+    assert mascota.mom == 'mimo' and not visto
+    mascota._mimar(ahora + 3)
+    assert mascota.mom == 'cosquillas' and visto == ['cosquillas']
+    assert mascota.mimos == []
+    for t in (0.2, 1.0, 2.0):                                  # la risa se dibuja
+        mascota.mom_ini = time.monotonic() - t
+        S.dibujar(mascota._pose(time.monotonic()))
+    mascota.mom = None
+    mascota.hover_desde = time.monotonic() - 15
+    mascota._tick()
+    mascota._tick()
+    assert visto.count('observado') == 1, 'avisa una sola vez por mirada'
 
 
 def test_mate_mientras_labura(mascota):

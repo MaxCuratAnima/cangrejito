@@ -1,11 +1,10 @@
-## Novedades de la 1.3.0
+## Novedades de la 1.4.0
 
-- **Se viste según la música argentina:** folklore (gaucho y criolla), tango (funyi y bandoneón), cuarteto (camisa con brillos), cumbia (gorrita, camiseta y teclado), rock nacional (campera y eléctrica) y trap (gorra, cadena y micrófono). Podés sumar tus artistas a cada género.
-- **Fechas patrias y culturales:** escarapela y ropa de cada fecha, curiosidades del día, el mástil del 20 de Junio (lo iza y lo saluda; se arrastra con el mouse), ñoquis el 29, Día del Amigo, del Mate, del Tango y más.
-- **La voz respira:** pausas entre oraciones, un poquito más lenta con textos largos y con ánimo (contento, enojado, cansado). Pronuncia mejor palabras técnicas, siglas, números y no lee los emojis.
-- **Festejos con sonido:** grita «¡Golazo!» y se escucha el confeti.
-- **Más personalizable:** cómo te trata (compañero, compañera o neutro), qué toma (mate, café, té), tu bandera, pausas activas, avisos de uso y muchas frases nuevas.
-- La ventana de configuración ya no queda detrás del cangrejito.
+- **Baila según el género:** vueltita con pañuelo en el folklore, casco dorado de robot con la electrónica, bola de disco, rastas con el reggae, melena con el metal y batuta en lo clásico. Y más gracias en los ratos libres: malabares, burbujas, sentadillas, un estornudo, una mosca molesta y estirarse.
+- **Mini-cangrejos ayudantes:** un casquito de obra y una tablita por cada agente que Claude manda a laburar. Se saludan, chocan las pinzas, hacen torres y, cuando terminan, se quedan al lado con un tilde verde.
+- **Reacciona según cómo salió la tarea:** festeja si salió bien, se pone triste si falló, duda si quedó a medias y dice «bastante bien» si salió con detalles.
+- **Chats comunes de Claude (opcional, viene apagado):** si lo prendés en la configuración, comenta también esos chats y muestra el nombre del chat en el globo.
+- **Menos tirones** al moverlo o abrir el menú, más frases rioplatenses, cosquillas con los mimos y varias curiosidades escondidas.
 
 ## Descargas
 

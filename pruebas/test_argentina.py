@@ -35,7 +35,11 @@ def test_generos_musicales_argentinos():
              'Rodrigo - Lo mejor del amor': 'cuarteto', 'Olivia Rodrigo - drivers license': '',
              'Damas Gratis - Se te ve la tanga': 'cumbia', 'Soda Stereo - De Música Ligera': 'rock',
              'Bizarrap, Duki - Bzrp Music Sessions #50': 'trap', 'Chaqueño Palavecino - Amor salvaje': 'folklore',
-             'Kordhell - Murder In My Mind': 'funk', 'Taylor Swift - Shake It Off': ''}
+             'Kordhell - Murder In My Mind': 'funk', 'Taylor Swift - Shake It Off': '',
+             'Daft Punk - One More Time': 'electronica', 'Bee Gees - Stayin Alive': 'disco',
+             'Bob Marley - One Love': 'reggae', 'Metallica - Enter Sandman': 'metal',
+             'Beethoven - Para Elisa': 'clasica', 'Bad Bunny - Tití Me Preguntó': '',
+             'Anitta - Reggaeton Lento': ''}
     for tema, genero in casos.items():
         assert V.genero_musical(tema) == genero, tema
     assert V.genero_musical('Mi Banda - Tema', {'cumbia': ['Mi Banda']}) == 'cumbia', 'artistas propios'
@@ -65,7 +69,8 @@ def M_ROPA():
 def test_todos_los_accesorios_y_banderas_se_dibujan(app):
     nombres = ['escarapela', 'galera', 'bicornio', 'poncho', 'guardapolvo', 'gorro_navidad', 'flor', 'funyi',
                'panuelo_blanco', 'bandoneon', 'lentejuelas', 'gorrita', 'camiseta', 'teclado_musical', 'campera',
-               'electrica', 'gorra', 'cadena', 'microfono', 'noquis', 'tenedor', 'mate', 'mate_boca', 'bandera']
+               'electrica', 'gorra', 'cadena', 'microfono', 'noquis', 'tenedor', 'mate', 'mate_boca', 'bandera',
+               'casco_plata', 'casco_oro', 'panuelo_baile', 'bola_disco', 'gorro_rasta', 'peluca', 'melena']
     for bebida in ('mate', 'cafe', 'te', 'ruda'):
         for pais in S.BANDERAS:
             S.dibujar(S.Pose(accesorios={k: 1.0 for k in nombres}, bebida=bebida, bandera=pais))

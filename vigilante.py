@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -84,7 +85,7 @@ GENEROS = {
               'el mató a un policía motorizado', 'attaque 77', 'ataque 77', 'los gardelitos', 'catupecu machu',
               '=airbag', 'ratones paranoicos', 'viejas locas', 'intoxicados', 'el bordo', 'las pelotas', '=skay',
               'los auténticos decadentes', 'los autenticos decadentes', 'enanitos verdes', 'david lebón',
-              '=pappo', 'rata blanca', '=hermética', 'almafuerte', 'los violadores', '2 minutos', 'el otro yo',
+              '=pappo', 'los violadores', '2 minutos', 'el otro yo',
               'bandalos chinos', 'conociendo rusia', 'usted señálemelo', 'el kuelgue', 'patricio rey',
               'los tipitos', 'guasones', 'el cuarteto de nos', 'no te va gustar', 'la vela puerca'],
              ['rock nacional']),
@@ -96,6 +97,43 @@ GENEROS = {
              ['bzrp', 'music sessions', 'freestyle', 'trap']),
 }
 GENEROS['folklore'] = (ARTISTAS_GUITARRA, PALABRAS_GUITARRA)
+# en las palabras, una «|» al final exige que la palabra termine ahí («reggae|» no confunde «reggaeton»)
+GENEROS['electronica'] = (
+    ['daft punk', '=justice', '=deadmau5', '=skrillex', '=avicii', 'david guetta', 'calvin harris', 'martin garrix',
+     '=tiësto', '=tiesto', '=zedd', 'swedish house mafia', '=kygo', '=alok', '=marshmello', '=diplo', 'kraftwerk',
+     'chemical brothers', '=moby', 'fatboy slim', '=bonobo', 'the prodigy', 'eric prydz', '=afrojack',
+     'steve aoki', '=flume', '=odesza', '=kaskade', '=alesso', '=hardwell', 'armin van buuren', 'paul van dyk',
+     'carl cox', 'boris brejcha', 'charlotte de witte', 'amelie lens', 'nina kraviz', '=solomun', 'jamie xx',
+     'cassius', '=air', '=zhu', 'rüfüs du sol', 'rufus du sol', 'lost frequencies'],
+    ['techno|', 'dubstep|', 'trance|', 'edm|', 'electrónica|', 'electronica|', 'synthwave|'])
+GENEROS['disco'] = (
+    ['bee gees', '=abba', 'donna summer', 'gloria gaynor', 'village people', 'boney m', 'sister sledge',
+     'the trammps', 'earth, wind', 'earth wind', 'kool & the gang', 'kool and the gang', 'kc and the sunshine',
+     'thelma houston', '=sylvester', 'diana ross', '=anita ward', 'lipps inc', '=cerrone', 'nile rodgers',
+     'the jacksons', 'george mccrae', '=odyssey', 'rose royce', 'hot chocolate', 'the weather girls'],
+    ['disco|', 'disco inferno', 'disco fever', 'disco queen', 'stayin alive', "stayin' alive", 'funkytown'])
+GENEROS['reggae'] = (
+    ['bob marley', 'peter tosh', 'jimmy cliff', 'toots and the maytals', 'burning spear', 'steel pulse', '=ub40',
+     'sean paul', '=shaggy', 'damian marley', 'ziggy marley', '=chronixx', '=protoje', '=koffee', 'buju banton',
+     '=sizzla', '=capleton', 'beenie man', 'third world', 'black uhuru', 'the wailers', 'inner circle',
+     '=gondwana', 'los cafres', 'dread mar i', 'dread mar-i', '=nonpalidece', 'los pericos', '=alika',
+     'fidel nadal', 'rebelution', '=sublime'],
+    ['reggae|', 'reggae roots', 'roots reggae', 'dancehall|'])
+GENEROS['metal'] = (
+    ['metallica', 'iron maiden', 'black sabbath', 'megadeth', '=slayer', '=pantera', 'judas priest', 'motörhead',
+     'motorhead', 'ac/dc', 'ozzy osbourne', 'rammstein', 'slipknot', 'system of a down', '=korn', 'sepultura',
+     '=anthrax', '=testament', 'avenged sevenfold', '=dragonforce', '=sabaton', 'lamb of god', '=gojira',
+     '=mastodon', '=opeth', '=nightwish', '=helloween', 'blind guardian', '=manowar', '=scorpions',
+     'deep purple', 'rata blanca', '=hermética', 'almafuerte', 'dream theater', 'children of bodom', 'bring me the horizon', '=disturbed'],
+    ['heavy metal', 'death metal', 'black metal', 'thrash metal', 'power metal'])
+GENEROS['clasica'] = (
+    ['beethoven', 'mozart', '=bach', 'vivaldi', 'chopin', 'tchaikovsky', 'tchaikovski', 'tchaikowsky', 'brahms',
+     'schubert', 'debussy', '=ravel', 'händel', 'handel', 'haendel', '=liszt', 'paganini', 'rachmaninoff',
+     'rajmáninov', 'stravinsky', '=mahler', '=verdi', '=puccini', '=wagner', 'schumann', 'johann strauss',
+     'richard strauss', 'dvořák', 'dvorak', '=grieg', 'saint-saëns', '=satie', '=elgar', 'mendelssohn',
+     'orquesta sinfónica', 'filarmónica', 'filarmonica', 'philharmonic', 'symphony orchestra', 'yo-yo ma',
+     'lang lang', 'ludovico einaudi', 'rossini', 'bizet', 'albéniz', 'albeniz', 'de falla'],
+    ['sinfonía|', 'sinfonia|', 'symphony|', 'sonata|', 'concerto|', 'nocturne|', 'réquiem|', 'requiem|'])
 
 def _artistas(tema: str) -> tuple[str, list[str]]:
     """(campo del artista, cada artista por separado) de un «Artista, Otro - Tema»."""
@@ -114,19 +152,20 @@ def _coincide(nombre: str, artista: str, cada: list[str]) -> bool:
 
 def genero_musical(tema: str, extra: dict | None = None, apagados=()) -> str:
     """El género del tema para vestir al cangrejito: funk, folklore, tango, cuarteto, cumbia, rock,
-    trap, o '' si no es ninguno. «extra»: artistas que suma cada persona en la configuración;
+    trap, electronica, disco, reggae, metal, clasica, o '' si no es ninguno. «extra»: artistas que suma cada persona en la configuración;
     «apagados»: géneros que la persona no quiere."""
     extra = extra or {}
-    if 'funk' not in apagados and es_funk(tema, extra.get('funk') or ()):
+    if 'funk' not in apagados and 'funkytown' not in tema.lower() and es_funk(tema, extra.get('funk') or ()):
         return 'funk'
     artista, cada = _artistas(tema)
-    t = tema.lower()
+    t = tema.lower().split(' - ', 1)[-1]          # las palabras se buscan solo en el título
     # primero por el artista (más seguro), después por palabras del título
     for g, (nombres, _) in GENEROS.items():
         if g not in apagados and any(_coincide(a, artista, cada) for a in list(nombres) + list(extra.get(g) or ())):
             return g
     for g, (_, palabras) in GENEROS.items():
-        if g not in apagados and any(re.search(r'(?<!\w)' + re.escape(w.strip()), t) for w in palabras):
+        if g not in apagados and any(re.search(r'(?<!\w)' + re.escape(w.strip().rstrip('|')) + (r'(?!\w)' if w.strip().endswith('|') else ''), t)
+                                for w in palabras):
             return g
     return ''
 
@@ -172,6 +211,7 @@ class Vigilante(QObject):
     musica = Signal(bool)             # suena Spotify
     tema = Signal(str)                # empezó otro tema («Artista - Tema»)
     juego_pesado = Signal(bool)       # VRChat o SteamVR abiertos: nada de placa de video
+    _datos = Signal(object)           # lo que juntó el hilo, para aplicar en el hilo de la interfaz
 
     def __init__(self, cfg, propias_fn):
         super().__init__()
@@ -189,16 +229,21 @@ class Vigilante(QObject):
         self._micro_proc = None
         self._micro_inicio = -1e9
         self._vueltas = 0
-        self._timer = QTimer(self)
-        self._timer.timeout.connect(self._mirar)
+        self._pids = None
+        self._propias: set[int] = set()
+        self._parar = threading.Event()
+        self._datos.connect(self._aplicar)
         self._rapido = QTimer(self)
         self._rapido.timeout.connect(self._mirar_micro)
 
     def arrancar(self):
         self._mirar()
-        self._timer.start(2000)
+        threading.Thread(target=self._hilo_correr, name='vigilante', daemon=True).start()
         self._rapido.start(700)
-        self._gancho = so.enganchar_cambio_ventana(lambda: QTimer.singleShot(120, self.encima))
+        self._encima_t = QTimer(self)                 # un solo temporizador: un menú o una ventana nueva
+        self._encima_t.setSingleShot(True)            # disparan varios avisos seguidos y no hace falta uno por cada uno
+        self._encima_t.timeout.connect(self.encima)
+        self._gancho = so.enganchar_cambio_ventana(lambda: self._encima_t.start(150))
         if self._gancho is None and sys.platform == 'win32':
             log.warning('no pude enganchar el cambio de ventana: queda solo el repaso cada 2 s')
 
@@ -237,37 +282,60 @@ class Vigilante(QObject):
                 log.info('dictado: %s', dictando)
                 self.escuchando.emit(dictando)
 
+    # --- el repaso de la PC (procesos, ventanas, Spotify…) se junta en un hilo aparte: recorrer todos
+    # los procesos y ventanas de Windows tarda decenas de milisegundos y, en el hilo de la interfaz,
+    # trababa el arrastre y el menú cada 2 segundos.
+    def _juntar(self, propias: set[int], vuelta: int) -> dict:
+        d = {}
+        ventanas = so.ventanas()
+        if vuelta % 3 == 0 or self._pids is None:         # los procesos cambian despacio: cada 6 s
+            self._pids = so.pids_app_claude()             # de paso anota si hay VR abierto
+        d['abierta'] = bool(self.forzar or self.cfg.get('siempre_visible', False)
+                            or so.app_claude_abierta(ventanas, self._pids))
+        d['afk'] = so.segundos_inactivo() >= self.cfg['afk_minutos'] * 60
+        d['tapados'] = set(so.monitores_en_pantalla_completa(propias, ventanas))
+        d['vr'] = so.hay_vr()
+        d['tema'] = so.spotify_tema(ventanas)
+        d['sesiones'] = self._leer_sesiones() if vuelta % 2 == 0 else None
+        return d
+
+    def _hilo_correr(self):
+        vuelta = 1
+        while not self._parar.wait(2.0):
+            try:
+                self._datos.emit(self._juntar(self._propias, vuelta))
+            except Exception:
+                log.exception('vigilante (hilo)')
+            vuelta += 1
+
     def _mirar(self):
+        """Un repaso completo ahora mismo (al arrancar y en las pruebas)."""
+        self._propias = {int(h) for h in self.propias_fn()}
+        try:
+            self._aplicar(self._juntar(self._propias, 0))
+        except Exception:
+            log.exception('vigilante')
+
+    def _aplicar(self, d: dict):
         self._vueltas += 1
         try:
-            ventanas = so.ventanas()
-            pids = so.pids_app_claude()       # siempre: de paso anota si hay VR abierto
-            abierta = (self.forzar or self.cfg.get('siempre_visible', False)
-                       or so.app_claude_abierta(ventanas, pids))
+            abierta = d['abierta']
             if abierta != self.app_abierta:
                 self.app_abierta = abierta
                 log.info('app de Claude %s', 'abierta' if abierta else 'cerrada')
                 self.app.emit(abierta)
-
-            afk = so.segundos_inactivo() >= self.cfg['afk_minutos'] * 60
-            if afk != self.es_afk:
-                self.es_afk = afk
-                self.afk.emit(afk)
-
-            propias = {int(h) for h in self.propias_fn()}
-            tapados = so.monitores_en_pantalla_completa(propias, ventanas)
-            if set(tapados) != self.tapados:
-                self.tapados = set(tapados)
-                log.info('pantalla completa: %s', tapados or 'ninguna')
-                self.monitores_tapados.emit(set(tapados))
-
-            vr = so.hay_vr()
-            if vr != self.vr:
-                self.vr = vr
-                log.info('VRChat/SteamVR abierto: %s', vr)
-                self.juego_pesado.emit(vr)
-
-            tema = so.spotify_tema(ventanas)
+            if d['afk'] != self.es_afk:
+                self.es_afk = d['afk']
+                self.afk.emit(d['afk'])
+            if d['tapados'] != self.tapados:
+                self.tapados = set(d['tapados'])
+                log.info('pantalla completa: %s', d['tapados'] or 'ninguna')
+                self.monitores_tapados.emit(set(d['tapados']))
+            if d['vr'] != self.vr:
+                self.vr = d['vr']
+                log.info('VRChat/SteamVR abierto: %s', d['vr'])
+                self.juego_pesado.emit(d['vr'])
+            tema = d['tema']
             sonando = bool(tema)
             if sonando != self.sonando:
                 self.sonando = sonando
@@ -275,11 +343,11 @@ class Vigilante(QObject):
             if tema and tema != self.tema_actual:      # pausar y seguir con el mismo tema no cuenta
                 self.tema_actual = tema
                 self.tema.emit(tema)
-
-            if self._vueltas % 2 == 0:
-                self._leer_sesiones()
-            for h in propias:                          # repaso por las dudas, además del aviso al toque
-                so.poner_encima(h)
+            if d['sesiones'] is not None:
+                self.sesiones = d['sesiones']
+            self._propias = {int(h) for h in self.propias_fn()}
+            if self._vueltas % 5 == 0:                 # repaso por las dudas (el aviso al toque es el gancho)
+                self.encima()
             if self._vueltas % 30 == 0:
                 so.olvidar_nombres()
         except Exception:
@@ -298,4 +366,4 @@ class Vigilante(QObject):
                     continue
         except Exception:
             pass
-        self.sesiones = nuevas
+        return nuevas

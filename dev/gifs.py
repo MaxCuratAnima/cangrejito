@@ -128,10 +128,20 @@ def _fuentes():
                 break
 
 
+def saludo(app):
+    """El «bienvenido» del README: saluda con la pinza y el globo."""
+    m = nueva(app)
+    m.momento('saludar', 4.5)
+    m.globo.mostrar('¡Bienvenido! Yo te cuento lo que hace Claude', 'Cangrejito', 4.2)
+    grabar('saludando', m, 4.8, 340)
+
+
 def main():
     app = QApplication(sys.argv)
     _fuentes()
     SALIDA.mkdir(exist_ok=True)
+    if 'saludo' in sys.argv[1:]:
+        return saludo(app)
 
     # 1. trabajando: lo que narra mientras Claude labura
     m = nueva(app)

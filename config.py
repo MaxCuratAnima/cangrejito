@@ -25,7 +25,9 @@ POR_DEFECTO = {
     'artistas_extra': {},    # artistas que sumás a cada género: {"cumbia": ["Mi banda"], …}
     'respiro': 0.7,          # segundos de silencio entre una frase y la siguiente
     'efectos': True,
-    'chistes': True,         # de vez en cuando, en los ratos libres, tira un chiste         # sonido del confeti cuando festeja
+    'chistes': True,         # de vez en cuando, en los ratos libres, tira un chiste
+    'chats_normales': False,      # comenta también los chats comunes de la app de Claude (los lee de la ventana)
+    'ayudantes_visibles': True,   # un mini-cangrejo por cada agente que Claude manda a laburar
     'pausas_voz': 1.0,       # cuánto respira entre oraciones (1 = normal, más = más pausado)
     'silencio': False,
     'volumen': 0.5,

@@ -75,6 +75,11 @@ AYUDANTE = ['Llamo a un ayudante', 'Mando a un compañero a investigar', 'Refuer
             'Llamo a la banda', 'Un cangrejito amigo me da una mano', 'Pido ayuda a un colega',
             'Le paso un laburito a un compañero', 'Somos un equipo, eh']
 PAGINA = ['Armo una página', 'Publico una página', 'Te armo algo lindo para ver', 'Te preparo una página']
+REFUERZOS = ['Sumo refuerzos', 'Llegó la banda', 'Ahora somos varios', 'Mandé a la tropa a buscar',
+             'Todos a laburar', 'Se armó el equipo', 'Hay cangrejitos por todos lados',
+             'Más manos, más rápido', 'Salieron todos a investigar']
+VOLVIERON = ['Volvieron todos', 'Ya están todos de vuelta', 'La banda terminó', 'Misión cumplida, equipo',
+             'Todos listos, qué eficiencia', 'Terminaron todos, grosos']
 SKILL = ['Leyendo unas instrucciones', 'Repaso el manual', 'Me fijo en la receta', 'Leo el instructivo']
 PLAN = ['Armo un plan', 'Primero pienso un plan', 'Antes de meter mano, planifico',
         'Pienso bien cómo encararlo', 'Hagamos las cosas bien: primero un plan', 'Pienso la estrategia',
@@ -177,9 +182,38 @@ MUSICA_GENERO = {
              '¡Qué temazo del rock nacional!', '¡Pogo, pogo!'],
     'trap': ['¡Uh, trap! Me pongo la gorra.', '¡Qué flow!', '¡Esto es un fuego!', '¡Rompió todo!', '¡Qué barras!'],
     'funk': ['¡Uh, phonk! Me subo al Camaro.', '¡Arranco el auto!', '¡A derrapar!'],
+    'electronica': ['¡Uh, electrónica! Me pongo el casco.', 'Beep, boop… modo robot activado.',
+                    '¡Harder, better, faster, stronger!', 'Esto se baila a tirones, como los robots.',
+                    '¡Qué sintes, por favor!'],
+    'disco': ['¡Uh, música disco! Bajen la bola de espejos.', '¡Fiebre de sábado a la noche!',
+              '¡Esto pide pantalones de campana!', 'Stayin\' alive, nomás.', '¡A la pista!'],
+    'reggae': ['Uh, reggae. Tranqui, todo bien.', 'Me pongo el gorro y a menear despacito.',
+               'One love, nomás.', 'Esto se escucha con calma.', 'Qué buena onda tiene esto.'],
+    'metal': ['¡Uh, metal! A cabecear.', '¡Cuernitos arriba!', 'Esto se escucha a todo volumen.',
+              '¡Qué riff!', '¡Me crece la melena!'],
+    'clasica': ['Uh, clásica. Me pongo la peluca.', 'Ahora dirijo yo la orquesta.',
+                'Qué elegancia, por favor.', '¡Bravo, maestro!', 'Esto sí que es una obra maestra.'],
 }
 # el grito de festejo antes del «¡Listo!» (cuando terminó algo largo, siempre; si no, a veces)
 GRITO = ['¡Sí!', '¡Vamos!', '¡Golazo!', '¡Tomá!', '¡Eso!', '¡Bien ahí!', '¡Eeeh!', '¡Sí, señor!']
+CHAT_SUB = 'Chat de Claude'
+CHAT_ESCRIBE = ['Claude está armando la respuesta de «[chat]».', 'Pensando la respuesta de «[chat]»…',
+                'Espero lo que le conteste a «[chat]».', 'Ahí viene la respuesta de «[chat]».']
+# cómo salió la tarea cuando NO salió redonda (ver resultado.py)
+FALLO = ['Uf… no anduvo.', 'La puta madre, no funcionó.', 'Lo intenté, pero no salió. Qué bronca.',
+         'Ay, no… no quedó.', 'Qué bajón, no pude.', 'Uh, esta no la pude sacar.', 'Qué garrón, no anduvo.',
+         'Bueno… no funcionó. Lo miramos de nuevo.', 'Qué mala racha, {n}. No salió.', 'Nada, no hubo caso.',
+         'Ni a palos salió, {n}.', 'Qué bronca, lo intenté y no.']
+PARCIAL = ['Mmm… quedó, pero no tanto.', 'Hmm, podría haber quedado mejor.', 'Ehh… no salió del todo.',
+           'Medio flojito, {n}.', 'Quedó a medias, ¿viste?', 'Mmm, a esto le falta un toque.',
+           'Salió, pero con peros.', 'Hmm, sí, pero no.', 'No es lo que esperaba, {n}.', 'Avancé, pero todavía falta.']
+CASI_BIEN = ['Bastante bien, che. No es perfecto, pero zafa.', 'Salió bastante bien, ¿eh? No es perfecto.',
+             'Está bastante bien, con algún detallito.', 'No es perfecto, pero va por buen camino.',
+             'Zafó, {n}. Con algún detallito, pero zafó.', 'Mmm, casi, casi. Bastante bien.',
+             'Quedó piola, aunque no perfecto.', 'Dentro de todo, salió bien.', 'Bien, pero puede mejorar.',
+             'Cumple, {n}. Cumple.']
+RESULTADO = {'mal': (FALLO, 'fracaso', 'triste'), 'regular': (PARCIAL, 'duda', 'cansado'),
+             'casi': (CASI_BIEN, 'meh', '')}
 # humor según cuánto viene durando el laburo (se dicen una vez cada una, en orden)
 # (buena onda: si se queja, es del proyecto, nunca de la persona)
 CANSADO = ['Uff, este proyecto tiene tela para cortar. Vamos bien igual.', 'Esto es más largo de lo que parecía, pero avanza.',
@@ -243,6 +277,19 @@ PAUSA = ['Che, {n}, hace un rato largo que estás en la compu. ¿Te estirás un 
          'Che, {n}, parate un toque y caminá un poquito. Yo te cuido la compu.',
          'Acordate de pestañear, {n}. Yo también me olvido.',
          'Che, {n}, ¿y si hacemos una pausa y te preparás {mate}?']
+
+COSQUILLAS = ['¡Jajaja, basta, basta!', '¡Ay, no, cosquillas no!', '¡Jiji, me muero de risa!', '¡Pará, pará, que me río!',
+              '¡Ay, qué cosquillas, {n}!', '¡Jajaja! ¡Me vas a hacer pelota!', '¡Ay, mis pinzas, qué risa!']
+OBSERVADO = ['¿Qué mirás, {n}? ¿Tengo algo en la cara?', 'Jiji, me ponés nervioso con tanta mirada.',
+             '¿Me estás estudiando, {n}?', 'Uy, qué mirada. ¿Pasa algo?', 'Me miran y me pongo colorado.',
+             '¿Se me nota el lunar? Ah, no tengo lunares.', 'Dale, sacame una foto, {n}.',
+             'Eh, me vas a gastar de tanto mirarme.']
+# más frases rioplatenses (frases_extra.py): se suman, sin repetir, a las listas del mismo nombre
+from frases_extra import EXTRA as _EXTRA  # noqa: E402
+from resultado import clasificar  # noqa: E402
+for _nombre, _frases in _EXTRA.items():
+    _lista = globals()[_nombre]
+    _lista.extend(f for f in _frases if f not in _lista)
 
 SILENCIOSAS = {'ToolSearch', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskList', 'TaskGet', 'TaskOutput', 'TaskStop',
                'Monitor', 'ScheduleWakeup', 'CronCreate', 'CronDelete', 'CronList', 'ListMcpResourcesTool',
@@ -483,6 +530,7 @@ class Narrador(QObject):
         NOMBRE['n'] = cfg['nombre']
         self.sesiones_fn = sesiones_fn          # () -> {session_id: {'name':…, 'status':…}}
         self.estado: dict[str, dict] = {}       # por sesión: ocupada, stop_t, ultimo
+        self._agentes_n, self._pico_agentes = 0, 0   # cuántos agentes vinieron y el máximo a la vez
         self.hechas: deque = deque(maxlen=300)  # tool_use_id ya terminados
         self.ult_clave: dict[str, float] = {}
         self.pendiente = None                   # (texto, sub, cuando, importante, ánimo)
@@ -526,6 +574,35 @@ class Narrador(QObject):
         if self.cfg.get('detalle', 'detallado') == 'corto':
             return primera_frase(texto, 120)
         return primera_frase(texto, 280, cuantas=2)
+
+    # ------------------------------------------------------------ chats normales (sin hooks: los lee chats.py)
+    def chat_escribiendo(self, titulo: str = ''):
+        """Claude empezó a responder en un chat normal: se pone a esperar (y avisa en cuál, si habla bastante)."""
+        if not self.alguna_ocupada():
+            self.m.actividad('pensar')
+            if titulo and self._habla() == 'mucho' and self.cfg.get('chats_normales', False):
+                self.decir(_uno(CHAT_ESCRIBE).replace('[chat]', titulo), clave='chat_escribe', repetir=90,
+                           sub=titulo or CHAT_SUB)
+
+    def chat_cancelado(self):
+        """Dejó de escribir sin terminar (cambiaste de chat o cerraste la app): vuelve a lo suyo."""
+        if not self.alguna_ocupada():
+            self.m.actividad('libre')
+
+    def chat_respuesta(self, titulo_o_texto: str, texto: str | None = None):
+        """Claude terminó de responder en un chat normal: lo comenta como al final de una tarea."""
+        titulo, texto = ('', titulo_o_texto) if texto is None else (titulo_o_texto, texto)
+        texto = re.sub(r'^\s*(claude respondi[óo]|claude said|claude responded)\s*:?\s*', '', texto, flags=re.I)
+        if not self.alguna_ocupada():
+            self.m.actividad('libre')
+        if not self.cfg.get('chats_normales', False):
+            return
+        sub = titulo or CHAT_SUB
+        frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
+        # en un chat suelto no se juzga si «salió bien»: es una charla, no una tarea
+        self.m.momento('festejar', 2.4)
+        listo = '' if re.match(r'(¡\s*)?(listo|ya está|terminé|hecho)\b', frase, re.I) else _uno(LISTO)
+        self.decir(f'{listo} {frase}'.strip(), clave='chat', repetir=6, animo='contento', sub=sub)
 
     def _al_dia(self):
         respeto = self.fecha['respeto'] and self.cfg.get('fechas_argentinas', True)
@@ -768,6 +845,7 @@ class Narrador(QObject):
                                   lambda: self._paso(d, sid, s, sub, act, frase, alta, clave))
             elif tipo == 'PostToolUse':
                 self.hechas.append(d.get('tool_use_id'))
+                s['ultimo_fallo'] = False
                 self._explicar_tarde(d, sid, sub)
                 if s['ocupada']:
                     self.m.despues_de_herramienta()
@@ -776,6 +854,7 @@ class Narrador(QObject):
                 error = str(d.get('error') or '')
                 if not re.search(r'denied|rejected|interrupt|cancel', error, re.I):
                     self.errores.append(ahora)
+                    s['ultimo_fallo'] = True
                     if len([e for e in self.errores if ahora - e < 180]) >= 3:
                         self.errores.clear()
                         self.m.momento('frustrado', 2.2)
@@ -802,25 +881,31 @@ class Narrador(QObject):
                 duro = ahora - s['desde'] if s['ocupada'] and s.get('desde') else 0
                 largo = duro > 240
                 s['ocupada'], s['stop_t'], s['nivel'] = False, ahora, 0
+                self.m.agente('terminar_sesion', '', sid)       # los agentes que quedaron colgados
                 if d.get('transcript_path'):
                     QTimer.singleShot(12000, lambda r=d['transcript_path'], i=sid, n_=sub or '':
                                       self._contexto_del_transcript(i, r, n_))
                 if not self.alguna_ocupada():
                     self.m.actividad('libre')
+                texto = d.get('last_assistant_message') or ''
+                if not texto and d.get('transcript_path'):
+                    texto = ultimo_mensaje_del_transcript(d['transcript_path'])
+                res = clasificar(texto, s.pop('ultimo_fallo', False))
+                if res != 'ok':
+                    # no salió redonda: no festeja; se pone triste, duda o dice «bastante bien»
+                    lista, momento, animo = RESULTADO[res]
+                    self.m.momento(momento, 3.2)
+                    frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
+                    self.decir(f'{_uno(lista, n=self.n)} {frase}'.strip(), alta=True, sub=sub, animo=animo)
+                    return
                 if duro > 600:
                     # laburo largo: fiesta con confeti un buen rato y «¡por fin!»
                     self.m.momento('fiesta', 10)
-                    texto = d.get('last_assistant_message') or ''
-                    if not texto and d.get('transcript_path') and self.cfg.get('resumen_final', True):
-                        texto = ultimo_mensaje_del_transcript(d['transcript_path'])
                     frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
                     self.decir(f'{_uno(FIN_LARGO, n=n)} {frase}'.strip(), alta=True, sub=sub, dur=10,
                                animo='contento', efecto='fiesta')
                     return
                 self.m.momento('orgulloso' if largo else 'festejar', 2.8 if largo else 2.4)
-                texto = d.get('last_assistant_message') or ''
-                if not texto and d.get('transcript_path') and self.cfg.get('resumen_final', True):
-                    texto = ultimo_mensaje_del_transcript(d['transcript_path'])
                 frase = self._sobre_claude(texto) if self.cfg.get('resumen_final', True) else ''
                 # si la respuesta ya arranca con «Listo…», no lo decimos dos veces
                 listo = '' if re.match(r'(¡\s*)?(listo|ya está|terminé|hecho)\b', frase, re.I) \
@@ -830,10 +915,22 @@ class Narrador(QObject):
                 self.decir(f'{grito}{listo} {frase}'.strip(), alta=True, sub=sub, animo='contento',
                            efecto='confeti')        # siempre que tira confeti, se escucha
             elif tipo == 'SubagentStart':
-                self.m.ayudante(+1)
+                self._agentes_n += 1
+                aid = d.get('agent_id') or f'{sid}:{self._agentes_n}'
+                self.m.agente('nuevo', aid, sid)
+                activos = self.m.ayu.cuantos()
+                self._pico_agentes = max(self._pico_agentes, activos)
+                if activos >= 2 and random.random() < 0.6:
+                    self.decir(_uno(REFUERZOS), sub=sub, animo='contento')
             elif tipo == 'SubagentStop':
-                self.m.ayudante(-1)
+                self.m.agente('listo', d.get('agent_id') or '', sid)
+                if self.m.ayu.cuantos() == 0 and self._pico_agentes >= 2:
+                    self._pico_agentes = 0
+                    self.decir(_uno(VOLVIERON), sub=sub, animo='contento')
+                elif self.m.ayu.cuantos() == 0:
+                    self._pico_agentes = 0
             elif tipo == 'SessionEnd':
+                self.m.agente('limpiar', '', sid)
                 s['ocupada'] = False
                 self.estado.pop(sid, None)
                 if not self.alguna_ocupada():
@@ -1155,6 +1252,13 @@ class Narrador(QObject):
     def mimado(self):
         self.decir(_uno(MIMO, n=self.n), clave='mimo', repetir=15)
 
+    def cosquillas(self):
+        self.decir(_uno(COSQUILLAS, n=self.n), clave='cosquillas', repetir=20, animo='contento')
+
+    def observado(self):
+        if not self.escuchando and not self.oculto:
+            self.decir(_uno(OBSERVADO, n=self.n), clave='observado', repetir=120, animo='contento')
+
     def tema_nuevo(self, titulo: str, genero: str = ''):
         """Cambió el tema en Spotify: de vez en cuando lo festeja (no todos, y sin pisar lo de Claude).
         Si es de un género argentino que conoce (o phonk), lo comenta a su manera."""
@@ -1163,7 +1267,7 @@ class Narrador(QObject):
         if time.monotonic() - self.ult_clave.get('musica', -1e9) < 480 or random.random() > 0.35:
             return
         artista = titulo.split(' - ', 1)[0].strip()
-        if genero in MUSICA_GENERO and random.random() < 0.6:
+        if genero in MUSICA_GENERO and self.cfg.get('animaciones_musica', True) and random.random() < 0.6:
             frase = _uno(MUSICA_GENERO[genero], n=self.n)
         elif artista and len(artista) <= 30 and random.random() < 0.3:
             frase = _uno(MUSICA_ARTISTA, a=artista, n=self.n)

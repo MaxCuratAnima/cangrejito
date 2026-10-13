@@ -4,7 +4,7 @@
 ; Sale en instalador\salida\CangrejitoSetup.exe
 
 ; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: MIT
-#define Version "1.3.0"
+#define Version "1.4.0"
 #ifndef Dist
   #define Dist "..\dist\Cangrejito"
 #endif
@@ -86,8 +86,6 @@ Name: "{userprograms}\Cangrejito"; Filename: "{app}\Cangrejito.exe"; Parameters:
 
 [Run]
 ; conecta Claude Code con el cangrejito (hooks en %USERPROFILE%\.claude\settings.json, con copia de seguridad)
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks"; Flags: runhidden waituntilterminated; Tasks: not narracion
-Filename: "{app}\Cangrejito.exe"; Parameters: "--instalar-hooks --narracion"; Flags: runhidden waituntilterminated; Tasks: narracion
 Filename: "{app}\Cangrejito.exe"; Parameters: "--lanzador"; Description: "Arrancar el cangrejito ahora"; Flags: nowait postinstall
 
 [UninstallRun]
@@ -106,6 +104,23 @@ begin
   Firma.Font.Color := clGray;
   Firma.Left := ScaleX(16);
   Firma.Top := WizardForm.CancelButton.Top + (WizardForm.CancelButton.Height - Firma.Height) div 2;
+end;
+
+// conecta Claude Code con el cangrejito (hooks en settings.json); si falla, avisa en vez de quedar mudo
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  R: Integer;
+  Params: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    Params := '--instalar-hooks';
+    if WizardIsTaskSelected('narracion') then Params := Params + ' --narracion';
+    if (not Exec(ExpandConstant('{app}\Cangrejito.exe'), Params, '', SW_HIDE, ewWaitUntilTerminated, R)) or (R <> 0) then
+      MsgBox('No pude conectar el cangrejito con Claude Code (probablemente tu settings.json tiene un error). ' +
+             'El cangrejito se instaló, pero no va a narrar hasta que lo arregles. Más datos en %APPDATA%\Cangrejito\error-instalacion.txt.',
+             mbError, MB_OK);
+  end;
 end;
 
 // si ya estaba andando (reinstalación o actualización), lo cierra antes de copiar los archivos

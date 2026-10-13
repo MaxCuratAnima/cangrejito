@@ -2,6 +2,12 @@
   <img src="docs/banner.png" alt="Cangrejito: la mascota de escritorio que narra lo que hace Claude Code" width="100%">
 </p>
 
+<h1 align="center">¡Bienvenido!</h1>
+
+<p align="center">
+  <img src="docs/saludando.gif" alt="El cangrejito saludando" width="340">
+</p>
+
 <h3 align="center">Un cangrejito que vive en tu escritorio y te cuenta en voz alta lo que hace Claude Code.</h3>
 
 <p align="center">
@@ -10,43 +16,52 @@
   <a href="https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/Cangrejito-linux-x64.tar.gz"><img src="https://img.shields.io/badge/⬇_Descargar_para-Linux-E95420?style=for-the-badge&logo=linux&logoColor=white" alt="Descargar para Linux" height="44"></a>
 </p>
 
-<p align="center">
-  <b><a href="https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/CangrejitoSetup.exe">Windows</a></b>
-  ·
-  <b><a href="https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/Cangrejito-linux-x64.tar.gz">Linux</a></b>
-  ·
-  <a href="#cómo-se-instala">Cómo se instala</a>
-  ·
-  <a href="#qué-hace">Qué hace</a>
-  <br><sub>Gratis y de código abierto · Hecho por <b>MaxCurat</b></sub>
-</p>
-
 ---
+
+## Por qué existe
+
+Lo hice yo (MaxCurat) porque quería un compañero en la compu. Que me acompañe, que sea interactivo con
+Claude y que me vaya contando lo que hace en los chats y en los proyectos, para no tener que estar mirando
+la app todo el tiempo. Así puedo jugar o hacer otra cosa mientras Claude labura de fondo, y me entero por
+la voz cuando necesita algo o cuando terminó.
+
+Es un proyecto personal, hecho en Argentina. El personaje se inspira en el cangrejito de Claude Code, pero
+lo dibujé de cero, pixel por pixel, en código. Puede tener bugs: si encontrás alguno, abrí un
+[issue](https://github.com/MaxCuratAnima/cangrejito/issues) y lo miro.
 
 ## Cómo se instala
 
-No hace falta saber nada de GitHub: tocá el botón de tu sistema y se baja solo.
+Necesitás tener [Claude Code](https://claude.com/claude-code) (con cualquier cuenta). En Windows sirve la
+app de escritorio de Claude o la terminal; en Linux, la terminal.
 
-### En Windows (10 u 11)
+### Windows 10 u 11
 
-1. Tocá **[Descargar para Windows](https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/CangrejitoSetup.exe)**. Se baja `CangrejitoSetup.exe`.
-2. Abrilo. Si Windows muestra **«Windows protegió su PC»**, tocá **Más información → Ejecutar de todas formas**. Es normal: el instalador no tiene firma digital, que cuesta plata.
-3. Seguí los pasos (**Siguiente, Siguiente, Instalar**). No pide ser administrador.
+1. Bajá **[CangrejitoSetup.exe](https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/CangrejitoSetup.exe)**.
+2. Abrilo. Si Windows dice **«Windows protegió su PC»**, tocá **Más información → Ejecutar de todas formas**.
+   Pasa porque el instalador no tiene firma digital (cuesta plata y esto es gratis).
+3. **Siguiente, Siguiente, Instalar.** No pide ser administrador.
+4. Abrí Claude. El cangrejito aparece solo y se va cuando cerrás la app.
 
-### En Linux
+Si algo sale mal al conectarlo con Claude Code, el instalador te avisa con un cartel.
 
-1. Tocá **[Descargar para Linux](https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/Cangrejito-linux-x64.tar.gz)**.
-2. Descomprimilo: clic derecho → **Extraer aquí**.
-3. Abrí la carpeta en una terminal y escribí `./instalar.sh`. Te guía paso a paso.
+### Linux (x64, X11 o XWayland)
 
-La primera vez te da la bienvenida: le decís cómo llamarte y cómo querés que sea (si habla mucho o poco,
-si comenta corto o al detalle, su personalidad y su voz), y baja su voz (unos 110 MB, una sola vez).
-Después aparece solo cuando abrís Claude, y se despide cuando lo cerrás. Todo se cambia después con
-clic derecho sobre el cangrejito.
+1. Bajá **[Cangrejito-linux-x64.tar.gz](https://github.com/MaxCuratAnima/cangrejito/releases/latest/download/Cangrejito-linux-x64.tar.gz)**.
+2. Descomprimilo (clic derecho → **Extraer aquí**) o, en la terminal: `tar xzf Cangrejito-linux-x64.tar.gz`.
+3. Entrá a la carpeta y corré `./instalar.sh`. Te va guiando.
+4. Abrí Claude Code. Aparece cuando corre y se va cuando lo cerrás.
 
-> **¿Qué necesito?** [Claude Code](https://claude.com/claude-code), con cualquier cuenta. En Windows,
-> con la app de escritorio de Claude o con la terminal. En Linux, con la terminal. Todas las versiones
-> están en [Releases](https://github.com/MaxCuratAnima/cangrejito/releases).
+Para que haga todo en Linux (esconderse con juegos a pantalla completa, dormirse, bailar con Spotify):
+`sudo apt install x11-utils xprintidle playerctl libportaudio2`. Sin eso anda igual, pero esas partes quedan apagadas.
+Lo probé bastante menos que la versión de Windows.
+
+### La primera vez
+
+Te da la bienvenida y te pregunta cómo llamarte y cómo lo querés (si habla mucho o poco, corto o con detalle).
+Después baja su voz, unos 110 MB, una sola vez. Todo se cambia más tarde con clic derecho sobre el cangrejito.
+
+Para desinstalarlo: en Windows, desde «Agregar o quitar programas»; en Linux, con `desinstalar.sh`.
+Todas las versiones están en [Releases](https://github.com/MaxCuratAnima/cangrejito/releases).
 
 ---
 
@@ -54,13 +69,23 @@ clic derecho sobre el cangrejito.
 
 ### Te cuenta lo que hace Claude, en voz alta
 
-Mientras Claude Code trabaja, el cangrejito te dice qué archivo lee o edita, qué comando corre y para qué,
-qué encontró y qué va a probar. Cuando termina, te hace un resumen. Si Claude necesita un permiso o te
-hace una pregunta, te llama. Habla en castellano rioplatense, con una voz natural que se genera en tu PC,
-con pausas para respirar y con ánimo: contento cuando algo sale, enojado cuando no anda, cansado cuando el
-proyecto viene largo. Cuando festeja, grita «¡Golazo!» y se escucha el confeti.
+Mientras Claude Code trabaja, te dice qué archivo lee o edita, qué comando corre y para qué, y qué encontró.
+Cuando termina, te hace un resumen. Si Claude necesita un permiso o te hace una pregunta, te llama.
+Habla en castellano rioplatense con una voz que se genera en tu PC. Se alegra cuando algo sale, se pone
+triste cuando falla, duda si quedó a medias y dice «bastante bien» cuando salió con detalles. Si festeja,
+grita «¡Golazo!» y tira confeti.
 
 <p align="center"><img src="docs/trabajando.gif" alt="El cangrejito narrando mientras Claude trabaja" width="420"></p>
+
+<p align="center"><img src="docs/reacciones.png" alt="Sus caras cuando algo falla, queda a medias o sale bastante bien" width="85%"><br><sub>De arriba para abajo: cuando falla, cuando queda a medias y cuando sale «bastante bien».</sub></p>
+
+### Un mini-cangrejo por cada agente
+
+Cuando Claude manda ayudantes a trabajar en paralelo, aparece un mini-cangrejo con casquito de obra y una
+tablita por cada uno. El primero se sube a la cabeza; los demás se reparten a los costados. Se saludan,
+chocan las pinzas, hacen torres y, cuando terminan, se quedan al lado con un tilde verde.
+
+<p align="center"><img src="docs/ayudantes.png" alt="Mini-cangrejos ayudantes alrededor del cangrejito" width="85%"></p>
 
 ### Se toma unos mates mientras labura
 
@@ -73,55 +98,60 @@ En la configuración elegís café, té o nada.
 
 <table>
 <tr>
-<td align="center" width="50%"><img src="docs/camaro.gif" alt="Manejando un Camaro con phonk" width="100%"><br><b>Con phonk o funk</b>, se sube a un Camaro descapotable con lentes y derrapa por la pantalla.</td>
-<td align="center" width="50%"><img src="docs/guitarra.gif" alt="Tocando la guitarra vestido de gaucho" width="300"><br><b>Con folklore</b>, se viste de gaucho y toca la criolla.</td>
+<td align="center" width="50%"><img src="docs/camaro.gif" alt="Manejando un Camaro con phonk" width="100%"><br><b>Con phonk o funk</b>, se sube a un Camaro descapotable y derrapa por la pantalla.</td>
+<td align="center" width="50%"><img src="docs/guitarra.gif" alt="Tocando la guitarra vestido de gaucho" width="300"><br><b>Con folklore</b>, se viste de gaucho y toca la criolla (o gira con un pañuelo en la chacarera).</td>
 </tr>
 <tr>
-<td align="center"><img src="docs/baile.gif" alt="Bailando" width="300"><br><b>Con cualquier tema</b> de Spotify baila, y a veces lo comenta («¡Uh, temazo!»).</td>
+<td align="center"><img src="docs/baile.gif" alt="Bailando" width="300"><br><b>Con cualquier tema</b> de Spotify baila, y a veces lo comenta.</td>
 <td align="center"><img src="docs/jugando.gif" alt="Acompañando mientras jugás" width="300"><br><b>Mientras jugás</b> en el otro monitor, juega con vos, come pochoclos o te alienta con la bandera.</td>
 </tr>
 </table>
 
-Además camina, se sienta, juega con el celular, se duerme cuando no estás y te saluda cuando volvés.
+Cuando no pasa nada también hace cosas: malabares, burbujas, sentadillas, se estira, estornuda, espanta una
+mosca, juega con el celular, se duerme si no estás y te saluda cuando volvés. Si lo mimás varias veces seguidas
+le dan cosquillas, y si lo mirás con el mouse encima demasiado rato, te lo comenta.
 
 ### Se viste según la música y las fechas argentinas
 
-Es un cangrejito hecho por argentinos. Reconoce a los íconos de cada género y se pone su ropa:
+Reconoce a los artistas de cada género y se pone su ropa:
 
-| Género | Ropa e instrumento | Algunos artistas que reconoce |
+| Género | Qué hace o se pone | Algunos artistas que reconoce |
 |---|---|---|
-| Folklore | Sombrero y pañuelo de gaucho, guitarra criolla | Chaqueño Palavecino, Mercedes Sosa, Soledad, Los Nocheros, Abel Pintos |
-| Tango | Funyi, pañuelo blanco y bandoneón | Carlos Gardel, Astor Piazzolla, Julio Sosa, Goyeneche, Bajofondo |
-| Cuarteto | Camisa con brillos, y a bailar | La Mona Jiménez, Rodrigo, Ulises Bueno, La K'onga, Q' Lokura |
-| Cumbia | Gorrita, camiseta albiceleste y teclado | Damas Gratis, Los Palmeras, Gilda, Ráfaga, L-Gante |
-| Rock nacional | Campera de cuero, lentes y eléctrica | Soda Stereo, Charly García, Spinetta, Los Redondos, La Renga |
-| Trap | Gorra, cadena, lentes y micrófono | Duki, Bizarrap, Nicki Nicole, Trueno, María Becerra |
-| Phonk y funk | El Camaro blanco | Kordhell, DVRST, Interworld (y tu propia playlist) |
+| Folklore | Sombrero y pañuelo de gaucho, guitarra criolla; en la chacarera gira con el pañuelo | Chaqueño Palavecino, Mercedes Sosa, Soledad, Los Nocheros |
+| Tango | Funyi, pañuelo blanco y bandoneón | Gardel, Piazzolla, Julio Sosa, Goyeneche |
+| Cuarteto | Camisa con brillos, y a bailar | La Mona Jiménez, Rodrigo, Ulises Bueno |
+| Cumbia | Gorrita, camiseta albiceleste y teclado | Damas Gratis, Los Palmeras, Gilda, L-Gante |
+| Rock nacional | Campera de cuero, lentes y eléctrica | Soda Stereo, Charly García, Spinetta, La Renga |
+| Metal | Melena larga y campera | Rata Blanca, Hermética, Almafuerte, Metallica |
+| Trap | Gorra, cadena, lentes y micrófono | Duki, Bizarrap, Nicki Nicole, Trueno |
+| Electrónica | Casco dorado de robot | Daft Punk |
+| Disco | Lentejuelas y bola de disco | Bee Gees, Donna Summer |
+| Reggae | Gorro con rastas | Bob Marley |
+| Clásica | Peluca de director | Mozart, Beethoven |
+| Phonk y funk | El Camaro blanco | Kordhell, DVRST, Interworld |
 
-En la configuración podés apagar géneros y sumar tus artistas a cada uno.
+En la configuración podés apagar géneros y sumar tus artistas.
 
-En las **fechas patrias** lleva la escarapela y su ropa (galera el 25 de Mayo y el 9 de Julio, bicornio
-el 17 de Agosto, poncho salteño por Güemes) y cada tanto cuenta una curiosidad del día. **El 20 de Junio
-planta un mástil, iza la bandera y la saluda**; el mástil lo podés agarrar con el mouse y llevarlo a otro
-lado, y él lo va a buscar. También festeja las fechas culturales: **ñoquis el 29**, el Día del Amigo, del
-Mate, de la Tradición, del Tango, la Pachamama, Navidad y más. Los días de memoria (24 de marzo y 2 de
+En las **fechas patrias** lleva la escarapela y su ropa (galera el 25 de Mayo y el 9 de Julio, bicornio el 17
+de Agosto, poncho salteño por Güemes) y cada tanto cuenta una curiosidad del día. El 20 de Junio planta un
+mástil, iza la bandera y la saluda; el mástil lo podés arrastrar con el mouse. También festeja el Día del
+Amigo, del Mate, del Tango y la Pachamama, y los **ñoquis el 29**. Los días de memoria (24 de marzo y 2 de
 abril) no festeja ni hace chistes.
 
 <p align="center"><img src="docs/outfits.png" alt="La ropa del cangrejito según la música y las fechas" width="90%"></p>
 
 ### Se adapta a vos
 
-En la primera vez te pregunta cómo llamarte, y desde el clic derecho cambiás todo: si te trata de
-«compañero», «compañera» o sin género, qué toma, tu bandera para alentarte (Argentina, Uruguay, Chile,
-México, España y más), cuánto habla, si dice malas palabras, si te recuerda hacer pausas activas, qué
-música lo hace bailar y cuánto respira al hablar.
+En el clic derecho cambiás cómo te trata («compañero», «compañera» o sin género), qué toma, tu bandera para
+alentarte, cuánto habla, si dice malas palabras, si te recuerda hacer pausas activas, qué música lo hace
+bailar y cuánto respira al hablar.
 
 ### No molesta
 
-- **Si un juego ocupa la pantalla completa** (o abrís VRChat), se muda al otro monitor. Si no hay otro, se esconde y se calla.
-- **Si le dictás a Claude,** se calla y pone cara de escuchar.
-- **Con varios chats de Claude a la vez,** te dice de cuál habla.
-- **Si el chat se está llenando,** te avisa que conviene compactar.
+- Si un juego ocupa la pantalla completa (o abrís VRChat), se muda al otro monitor. Si no hay otro, se esconde y se calla.
+- Si le dictás a Claude, se calla y pone cara de escuchar.
+- Con varios chats de Claude a la vez, te dice de cuál habla.
+- Si el chat se está llenando, te avisa que conviene compactar.
 
 ### Se maneja con el mouse
 
@@ -130,7 +160,7 @@ música lo hace bailar y cuánto respira al hablar.
 | Clic | Se calla o vuelve a hablar |
 | Doble clic | Se pone mimoso |
 | Arrastrar | Lo levantás; si lo sacudís, se marea |
-| Clic derecho | Abre el menú con toda la configuración: cuánto habla, comentarios cortos o detallados, personalidad, música, volumen y velocidad de la voz |
+| Clic derecho | Abre el menú con toda la configuración |
 
 <p align="center"><img src="docs/poses.png" alt="Algunas poses del cangrejito" width="90%"></p>
 
@@ -138,33 +168,36 @@ música lo hace bailar y cuánto respira al hablar.
 
 ## Privacidad
 
-Todo corre en tu PC. El cangrejito **no manda nada a internet**: Claude Code le avisa lo que hace por una
-conexión local (`127.0.0.1`), y la voz se genera en tu computadora. La única descarga es la voz, una sola
-vez, desde el repositorio oficial de voces de Piper, y se verifica que sea la original.
+Todo corre en tu PC y no manda nada a internet. La única conexión externa es la descarga de la voz, una vez,
+desde el repositorio oficial de voces de Piper (se verifica que el archivo sea el original).
+
+Para poder hacer lo que hace, mira esto en tu compu:
+
+- Lo que Claude Code le avisa por una conexión local (`127.0.0.1`): qué herramienta usa, el archivo o comando, y lo último que escribió Claude (lo lee de tu carpeta `~/.claude`).
+- El título de lo que suena en Spotify, para vestirse y bailar según el género.
+- Si el micrófono está en uso, para callarse cuando le dictás a Claude.
+- Qué ventana está en pantalla completa, para esconderse cuando jugás.
+- **Chats comunes de Claude: viene apagado.** Si lo prendés en la configuración, lee la ventana de la app para comentar esos chats. Eso incluye lo que ves en pantalla del chat, así que pensalo si hablás de cosas privadas.
+
+Guarda un registro local en `%APPDATA%\Cangrejito\registro.txt` con las frases que dijo (el comienzo de cada una),
+los temas que sonaron y los nombres de tus proyectos. Se queda en tu PC; podés borrarlo cuando quieras.
 
 ## Qué cambia en tu PC
 
-- **El programa:**
-  - Windows: `%LOCALAPPDATA%\Programs\Cangrejito`.
-  - Linux: `~/.local/share/cangrejito-programa`.
+- **El programa:** Windows en `%LOCALAPPDATA%\Programs\Cangrejito`; Linux en `~/.local/share/cangrejito-programa`.
 - **Arranque con la sesión:** un lanzador liviano que espera a que abras Claude.
 - **Hooks en `~/.claude/settings.json`:** así Claude Code le avisa al cangrejito. Antes de tocarlo se guarda una copia, y tus otros hooks no se tocan.
 - **Opcional:** unas reglas en tu `CLAUDE.md` global para que Claude explique cada paso en castellano.
-- **Tus ajustes:** en `%APPDATA%\Cangrejito` (Windows) o `~/.local/share/cangrejito` (Linux). Están en `config.json`: nombre, volumen, velocidad de la voz, a los cuántos minutos se duerme, si comenta la música…
+- **Tus ajustes:** en `%APPDATA%\Cangrejito` (Windows) o `~/.local/share/cangrejito` (Linux), en `config.json`.
 
-Al desinstalar se saca todo lo del cangrejito y Claude Code queda como estaba. Se desinstala así:
-- **Windows:** desde «Agregar o quitar programas».
-- **Linux:** con `desinstalar.sh`.
+Al desinstalar se sacan el programa y los hooks. Quedan tus ajustes, el registro y la voz descargada en
+`%APPDATA%\Cangrejito` (unos 110 MB): si no los querés, borrá esa carpeta.
 
 <details>
 <summary><b>Notas para Linux</b></summary>
 
 - **Escritorio:** funciona en X11. En Wayland corre por XWayland (viene en casi todas las distros).
-- **Para que haga todo** (esconderse con juegos a pantalla completa, dormirse, bailar con Spotify):
-  `sudo apt install x11-utils xprintidle playerctl libportaudio2`. Sin esos programas anda igual, pero
-  esas partes se apagan.
-- **Cuándo aparece:** en Linux no hay app de escritorio de Claude, así que aparece cuando corre Claude
-  Code y se va cuando lo cerrás.
+- **Cuándo aparece:** en Linux no hay app de escritorio de Claude, así que aparece cuando corre Claude Code y se va cuando lo cerrás.
 - **Dictado:** todavía no detecta cuándo le dictás a Claude.
 </details>
 
@@ -222,18 +255,29 @@ La voz XTTS (más natural, con placa de video) es opcional y no viene en los ins
 
 ---
 
+---
+
+## Con qué está hecho
+
+- **Lenguaje:** Python 3, con PySide6 (Qt) para la ventana y el dibujo pixel por pixel.
+- **Voz:** Piper con la voz «Daniela» en español argentino. Corre en tu PC, sin internet. No viene en este repositorio: se baja una vez al abrirlo por primera vez.
+- **Instaladores:** PyInstaller + Inno Setup para Windows, y un `.tar.gz` con `instalar.sh` para Linux, armados por GitHub Actions.
+- **Código abierto:** con licencia MIT. Podés usarlo, cambiarlo y compartirlo, siempre que dejes el aviso de autoría.
+
+---
+
 ## Créditos y licencia
 
-**Cangrejito** fue creado por **MaxCurat** (© 2026). El código es libre, con [licencia MIT](LICENSE):
-podés usarlo, cambiarlo y compartirlo, siempre que mantengas el aviso de autoría.
+**Cangrejito** lo hizo **MaxCurat** (© 2026). El código es libre, con [licencia MIT](LICENSE): podés usarlo,
+cambiarlo y compartirlo, siempre que mantengas el aviso de autoría.
 
 - **Voz «Daniela»** ([Piper](https://github.com/rhasspy/piper), es_AR): licencia CC BY-SA 4.0, dataset
   [OpenSLR 61](https://www.openslr.org/61/), entrenada por [larcanio](https://huggingface.co/larcanio/piper-voices).
   Se baja aparte; no es parte de este código.
 - **Interfaz:** [PySide6](https://doc.qt.io/qtforpython-6/) (Qt for Python, LGPL).
-- **Personaje:** dibujado en código, inspirado en Clawd, la mascota de Claude Code.
+- **Personaje:** dibujado en código, inspirado en Clawd, el cangrejito de Claude Code.
 
 > Proyecto de fan, **no oficial**: no está afiliado a Anthropic ni respaldado por Anthropic.
 > «Claude» y «Claude Code» son marcas de Anthropic.
 
-<p align="center"><sub>Hecho con 🦀 y mate por <b>MaxCurat</b> · con ayuda de Claude Code</sub></p>
+<p align="center"><sub>Hecho en Argentina con mate · por <b>MaxCurat</b> · escrito con ayuda de Claude Code</sub></p>
