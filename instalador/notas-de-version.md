@@ -1,3 +1,8 @@
+## Novedades de la 1.4.1
+
+- Ya no repite la frase anterior ni lo que acaba de decir.
+- Reconoce a más guitarristas y folkloristas argentinos (se viste de gaucho y toca la criolla).
+
 ## Novedades de la 1.4.0
 
 - **Baila según el género:** vueltita con pañuelo en el folklore, casco dorado de robot con la electrónica, bola de disco, rastas con el reggae, melena con el metal y batuta en lo clásico. Y más gracias en los ratos libres: malabares, burbujas, sentadillas, un estornudo, una mosca molesta y estirarse.

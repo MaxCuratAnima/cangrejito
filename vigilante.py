@@ -35,9 +35,19 @@ ARTISTAS_GUITARRA = ['chaqueño', 'palavecino', 'los nocheros', 'abel pintos', '
                      'chalchaleros', 'fronterizos', 'los huayra', 'destino san javier', 'lucio rojas',
                      'galleguillo', 'carabajal', 'raly barrionuevo', 'facundo toro', 'los alonsitos',
                      'christian herrera', 'nahuel pennisi', 'larralde', 'horacio guarany', 'los cantores del alba',
-                     'los kjarkas', 'cuti y roberto carabajal', 'los visconti', 'la callejera']
+                     'los kjarkas', 'cuti y roberto carabajal', 'los visconti', 'la callejera',
+                     'juan falú', 'juan falu', 'eduardo falú', 'eduardo falu', 'ernesto méndez', 'ernesto mendez',
+                     'carlos moscardini', 'quique sinesi', 'jorge jewsbury', 'josé luis merlín', 'jose luis merlin',
+                     'roberto calvo', 'ariel ramírez', 'ariel ramirez', 'jaime torres', 'dino saluzzi', 'hugo díaz',
+                     'los cuatro de córdoba', 'los de salta', 'peteco carabajal', 'rubén patagonia', 'los trovadores',
+                     'los tucu tucu', 'los hermanos ábalos', 'los hermanos abalos', 'chango farías gómez',
+                     'chango nieto', 'los carabajal', 'tomás lipán', 'víctor heredia', 'victor heredia',
+                     'argentino luna', 'claudio ceccoli', 'bernardo baraj', 'pablo márquez', 'mauro lombardi',
+                     'gustavo santaolalla', 'juan quintero', 'luna monti', 'liliana herrero', 'lilián saba',
+                     'zamba quipildor', 'los nombradores', 'cafrune', 'los tres sudamericanos']
 PALABRAS_GUITARRA = ['acústic', 'acoustic', 'unplugged', 'zamba', 'chacarera', 'folklore', 'folclore',
-                     'guitarra', 'gato ', 'cueca', 'vidala', 'chamamé', 'chamame']
+                     'guitarra', 'gato ', 'cueca', 'vidala', 'chamamé', 'chamame', 'guaraní', 'guarania', 'carnavalito', 'huayno',
+                     'bagualero', 'baguala', 'milonga campera', 'camino de las', 'catedral de los']
 
 
 def es_de_guitarra(tema: str, extra=()) -> bool:

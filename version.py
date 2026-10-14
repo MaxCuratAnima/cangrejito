@@ -4,7 +4,7 @@
 """Versión y autoría (lo usan el menú «Acerca de», el .exe y el instalador)."""
 
 NOMBRE = 'Cangrejito'
-VERSION = '1.4.0'
+VERSION = '1.4.1'
 AUTOR = 'MaxCurat'
 AUTORIA = ('Lo hizo MaxCurat para tener un compañero virtual: que lo acompañe, sea interactivo con Claude y le vaya '
            'comentando lo que hace en los chats y en los proyectos. Así no hace falta estar pendiente de la app: se puede '

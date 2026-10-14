@@ -39,7 +39,9 @@ def test_generos_musicales_argentinos():
              'Daft Punk - One More Time': 'electronica', 'Bee Gees - Stayin Alive': 'disco',
              'Bob Marley - One Love': 'reggae', 'Metallica - Enter Sandman': 'metal',
              'Beethoven - Para Elisa': 'clasica', 'Bad Bunny - Tití Me Preguntó': '',
-             'Anitta - Reggaeton Lento': ''}
+             'Anitta - Reggaeton Lento': '', 'Juan Falú - Del 55': 'folklore',
+             'Quique Sinesi - Cielo Abierto': 'folklore', 'Ernesto Méndez - Alma Guaraní': 'folklore',
+             'Brian Eno - Emerald and Stone': ''}
     for tema, genero in casos.items():
         assert V.genero_musical(tema) == genero, tema
     assert V.genero_musical('Mi Banda - Tema', {'cumbia': ['Mi Banda']}) == 'cumbia', 'artistas propios'

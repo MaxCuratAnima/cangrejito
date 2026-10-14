@@ -4,7 +4,7 @@
 ; Sale en instalador\salida\CangrejitoSetup.exe
 
 ; Cangrejito — Copyright (c) 2026 MaxCurat — SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-#define Version "1.4.0"
+#define Version "1.4.1"
 #ifndef Dist
   #define Dist "..\dist\Cangrejito"
 #endif

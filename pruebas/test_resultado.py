@@ -50,3 +50,28 @@ def test_stop_reacciona_segun_como_salio(mascota, monkeypatch):
     nar.evento({'hook_event_name': 'PostToolUseFailure', 'session_id': 'S', 'cwd': 'C:/x', 'error': 'boom', 'tool_use_id': 'u1'})
     nar.evento({'hook_event_name': 'Stop', 'session_id': 'S', 'cwd': 'C:/x', 'last_assistant_message': 'Hice los cambios.'})
     assert mascota.mom == 'duda'
+
+
+def test_no_repite_lo_que_ya_dijo(app, mascota):
+    from narrador import Narrador
+    n = Narrador(mascota, mascota.voz, mascota.cfg, lambda: {})
+    dichas = []
+    n._emitir = lambda texto, *a, **k: dichas.append(texto)
+    frase = 'El código postal completo es X5000ASQ, lo saqué del link de Maps.'
+    n.decir(frase, alta=True)
+    n.decir(frase, alta=True)
+    n.decir(frase.upper(), alta=True)
+    assert len(dichas) == 1
+
+
+def test_el_pedido_nuevo_corta_la_explicacion_anterior(tmp_path):
+    import json
+    from narrador import explicacion_de
+    lineas = [
+        {'type': 'assistant', 'uuid': 'a1', 'message': {'content': [{'type': 'text', 'text': 'Listo, quedó el código postal.'}]}},
+        {'type': 'user', 'uuid': 'u1', 'message': {'content': 'ahora hacé otra cosa'}},
+        {'type': 'assistant', 'uuid': 'a2', 'message': {'content': [{'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {}}]}},
+    ]
+    r = tmp_path / 't.jsonl'
+    r.write_text('\n'.join(json.dumps(x) for x in lineas), encoding='utf-8')
+    assert explicacion_de(str(r), 't1') == ('', '', '')

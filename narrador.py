@@ -407,6 +407,8 @@ def explicacion_de(ruta: str, tool_id: str) -> tuple[str, str, str]:
         contenido = (d.get('message') or {}).get('content')
         if isinstance(contenido, list):
             entradas += [(d.get('type'), c, d.get('uuid', '')) for c in contenido if isinstance(c, dict)]
+        elif d.get('type') == 'user' and contenido:
+            entradas.append(('user', {'type': 'pedido'}, d.get('uuid', '')))   # límite: lo de antes ya se contó
     i = next((k for k in range(len(entradas) - 1, -1, -1)
               if entradas[k][1].get('type') == 'tool_use' and entradas[k][1].get('id') == tool_id), None)
     if i is None:
@@ -540,6 +542,7 @@ class Narrador(QObject):
         self.escuchando = False                # le estás dictando a Claude: no hablar encima
         self.errores: deque = deque(maxlen=10)
         self.explicados: deque = deque(maxlen=200)   # bloques del transcript ya contados
+        self.ult_dicho: dict[str, float] = {}        # huella de lo último que dijo, para no repetirlo
         self.para_despues: dict[str, str] = {}       # tool_use_id → qué contar si tarda
         self.ult_tarda = 0.0
         self.ult_pensamiento = 0.0
@@ -671,6 +674,16 @@ class Narrador(QObject):
             if ahora - self.ult_clave.get(clave, -1e9) < repetir:
                 return
             self.ult_clave[clave] = ahora
+        huella = re.sub(r'\W+', ' ', texto.lower()).strip()[:160]
+        if len(huella) > 30:
+            # lo mismo que ya dijo (o que está esperando para decir) hace poco: no se repite
+            pendiente = self.pendiente and re.sub(r'\W+', ' ', self.pendiente[0].lower()).strip()[:160]
+            if ahora - self.ult_dicho.get(huella, -1e9) < 300 or pendiente == huella:
+                return
+            self.ult_dicho[huella] = ahora
+            if len(self.ult_dicho) > 60:
+                for k in sorted(self.ult_dicho, key=self.ult_dicho.get)[:20]:
+                    del self.ult_dicho[k]
         if animo is None:
             animo = animo_de(texto)
         if self.fecha['respeto'] and self.cfg.get('fechas_argentinas', True) and animo == 'contento':
